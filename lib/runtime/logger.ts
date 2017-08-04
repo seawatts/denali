@@ -100,7 +100,7 @@ export default class Logger extends DenaliObject {
     }
   }
 
-  formatMessage(level: LogLevel, ...params: any[]): string {
+  protected formatMessage(level: LogLevel, ...params: any[]): string {
     let formattedMessage = util.format.apply(this, params);
 
     if (this.levels.indexOf(level) === -1) {
@@ -120,11 +120,11 @@ export default class Logger extends DenaliObject {
     return `[${timestamp}] ${levelLabel} - ${formattedMessage}\n`;
   }
 
-  write(message: string) {
+  protected write(message: string) {
     process.stdout.write(message);
   }
 
-  writeError(message: string) {
+  protected writeError(message: string) {
     process.stderr.write(message);
   }
 }
