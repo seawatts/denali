@@ -173,7 +173,7 @@ export default class Model extends DenaliObject {
    * Persist this model.
    */
   async save(options?: any): Promise<Model> {
-    debug(`saving ${ this.type }`);
+    debug(`saving ${ this.toString()}`);
     await this.adapter.saveRecord(this, options);
     return this;
   }
@@ -182,6 +182,7 @@ export default class Model extends DenaliObject {
    * Delete this model.
    */
   async delete(options?: any): Promise<void> {
+    debug(`deleting ${ this.toString() }`);
     await this.adapter.deleteRecord(this, options);
   }
 

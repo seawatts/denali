@@ -57,7 +57,7 @@ export default class Logger extends DenaliObject {
    * @since 0.1.0
    */
   info(...params: any[]): void {
-    this.log('info', params);
+    this.log('info', ...params);
   }
 
   /**
@@ -66,7 +66,7 @@ export default class Logger extends DenaliObject {
    * @since 0.1.0
    */
   warn(...params: any[]): void {
-    this.log('warn', params);
+    this.log('warn', ...params);
   }
 
   /**
@@ -75,7 +75,7 @@ export default class Logger extends DenaliObject {
    * @since 0.1.0
    */
   error(...params: any[]): void {
-    this.log('error', params);
+    this.log('error', ...params);
   }
 
   /**
@@ -84,14 +84,14 @@ export default class Logger extends DenaliObject {
    * @since 0.2.0
    */
   debug(...params: any[]): void {
-    this.log('debug', params);
+    this.log('debug', ...params);
   }
 
   /**
    * Log a message to the logger at a specific log level.
    */
   log(level: LogLevel, ...params: any[]): void {
-    let message = this.formatMessage(level, params);
+    let message = this.formatMessage(level, ...params);
 
     if (level.toLowerCase() === 'error') {
       this.writeError(message);
