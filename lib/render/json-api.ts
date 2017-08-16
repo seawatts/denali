@@ -389,7 +389,7 @@ export default abstract class JSONAPISerializer extends Serializer {
    * well.
    */
   protected async dataForRelatedRecord(context: Context, name: string, relatedRecord: Model, config: RelationshipConfig, descriptor: RelationshipDescriptor, record: Model): Promise<JsonApiResourceIdentifier> {
-    await this.includeRecord(context, name, relatedRecord, config, descriptor);
+    // await this.includeRecord(context, name, relatedRecord, config, descriptor);
     return {
       type: pluralize(relatedRecord.type),
       id: relatedRecord.id

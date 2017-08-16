@@ -1,0 +1,8 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const flat_1 = require("./flat");
+class RawParser extends flat_1.default {
+}
+exports.default = RawParser;
+;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicmF3LmpzIiwic291cmNlUm9vdCI6Ii9Vc2Vycy9zZWF3YXR0cy9zcmMvZ2l0aHViLmNvbS9zZWF3YXR0cy9kZW5hbGkvIiwic291cmNlcyI6WyJsaWIvcGFyc2UvcmF3LnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBQUEsaUNBQWdDO0FBRWhDLGVBQStCLFNBQVEsY0FBVTtDQUNoRDtBQURELDRCQUNDO0FBQUEsQ0FBQyIsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBGbGF0UGFyc2VyIGZyb20gJy4vZmxhdCc7XG5cbmV4cG9ydCBkZWZhdWx0IGNsYXNzIFJhd1BhcnNlciBleHRlbmRzIEZsYXRQYXJzZXIge1xufTtcbiJdfQ==

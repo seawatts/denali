@@ -1,0 +1,18 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const denali_cli_1 = require("denali-cli");
+const wrap = require("wordwrap");
+/**
+ * Take the tagged string and change the word wrapping to 100 columns (or the width of the terminal
+ * window, if smaller). Useful for writing paragraphs of text that should wrap in the source code,
+ * but may need to wrap to a different width when printed out to the terminal.
+ *
+ * @package util
+ */
+function rewrap(strings, ...expressions) {
+    let text = denali_cli_1.unwrap(strings, ...expressions);
+    text = wrap(text, Math.min(100, process.stdout.columns));
+    return text;
+}
+exports.default = rewrap;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicmV3cmFwLmpzIiwic291cmNlUm9vdCI6Ii9Vc2Vycy9zZWF3YXR0cy9zcmMvZ2l0aHViLmNvbS9zZWF3YXR0cy9kZW5hbGkvIiwic291cmNlcyI6WyJsaWIvdXRpbHMvcmV3cmFwLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBQUEsMkNBQW9DO0FBQ3BDLGlDQUFpQztBQUdqQzs7Ozs7O0dBTUc7QUFDSCxnQkFBK0IsT0FBNkIsRUFBRSxHQUFHLFdBQWtCO0lBQ2pGLElBQUksSUFBSSxHQUFHLG1CQUFNLENBQUMsT0FBTyxFQUFFLEdBQUcsV0FBVyxDQUFDLENBQUM7SUFDM0MsSUFBSSxHQUFHLElBQUksQ0FBQyxJQUFJLEVBQUUsSUFBSSxDQUFDLEdBQUcsQ0FBQyxHQUFHLEVBQW9CLE9BQU8sQ0FBQyxNQUFPLENBQUMsT0FBTyxDQUFDLENBQUMsQ0FBQztJQUM1RSxNQUFNLENBQUMsSUFBSSxDQUFDO0FBQ2QsQ0FBQztBQUpELHlCQUlDIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgdW53cmFwIH0gZnJvbSAnZGVuYWxpLWNsaSc7XG5pbXBvcnQgKiBhcyB3cmFwIGZyb20gJ3dvcmR3cmFwJztcbmltcG9ydCAqIGFzIHR0eSBmcm9tICd0dHknO1xuXG4vKipcbiAqIFRha2UgdGhlIHRhZ2dlZCBzdHJpbmcgYW5kIGNoYW5nZSB0aGUgd29yZCB3cmFwcGluZyB0byAxMDAgY29sdW1ucyAob3IgdGhlIHdpZHRoIG9mIHRoZSB0ZXJtaW5hbFxuICogd2luZG93LCBpZiBzbWFsbGVyKS4gVXNlZnVsIGZvciB3cml0aW5nIHBhcmFncmFwaHMgb2YgdGV4dCB0aGF0IHNob3VsZCB3cmFwIGluIHRoZSBzb3VyY2UgY29kZSxcbiAqIGJ1dCBtYXkgbmVlZCB0byB3cmFwIHRvIGEgZGlmZmVyZW50IHdpZHRoIHdoZW4gcHJpbnRlZCBvdXQgdG8gdGhlIHRlcm1pbmFsLlxuICpcbiAqIEBwYWNrYWdlIHV0aWxcbiAqL1xuZXhwb3J0IGRlZmF1bHQgZnVuY3Rpb24gcmV3cmFwKHN0cmluZ3M6IFRlbXBsYXRlU3RyaW5nc0FycmF5LCAuLi5leHByZXNzaW9uczogYW55W10pOiBzdHJpbmcge1xuICBsZXQgdGV4dCA9IHVud3JhcChzdHJpbmdzLCAuLi5leHByZXNzaW9ucyk7XG4gIHRleHQgPSB3cmFwKHRleHQsIE1hdGgubWluKDEwMCwgKDx0dHkuV3JpdGVTdHJlYW0+cHJvY2Vzcy5zdGRvdXQpLmNvbHVtbnMpKTtcbiAgcmV0dXJuIHRleHQ7XG59XG4iXX0=

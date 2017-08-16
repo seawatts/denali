@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const lodash_1 = require("lodash");
+function setIfNotEmpty(obj, key, value) {
+    if (lodash_1.isArray(value) || !lodash_1.isEmpty(value)) {
+        lodash_1.set(obj, key, value);
+    }
+}
+exports.default = setIfNotEmpty;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoic2V0LWlmLW5vdC1lbXB0eS5qcyIsInNvdXJjZVJvb3QiOiIvVXNlcnMvc2Vhd2F0dHMvc3JjL2dpdGh1Yi5jb20vc2Vhd2F0dHMvZGVuYWxpLyIsInNvdXJjZXMiOlsibGliL3V0aWxzL3NldC1pZi1ub3QtZW1wdHkudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFBQSxtQ0FBK0M7QUFFL0MsdUJBQXNDLEdBQVEsRUFBRSxHQUFXLEVBQUUsS0FBVTtJQUNyRSxFQUFFLENBQUMsQ0FBQyxnQkFBTyxDQUFDLEtBQUssQ0FBQyxJQUFJLENBQUMsZ0JBQU8sQ0FBQyxLQUFLLENBQUMsQ0FBQyxDQUFDLENBQUM7UUFDdEMsWUFBRyxDQUFtQixHQUFHLEVBQUUsR0FBRyxFQUFFLEtBQUssQ0FBQyxDQUFDO0lBQ3pDLENBQUM7QUFDSCxDQUFDO0FBSkQsZ0NBSUMiLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBpc0FycmF5LCBpc0VtcHR5LCBzZXQgfSBmcm9tICdsb2Rhc2gnO1xuXG5leHBvcnQgZGVmYXVsdCBmdW5jdGlvbiBzZXRJZk5vdEVtcHR5KG9iajogYW55LCBrZXk6IHN0cmluZywgdmFsdWU6IGFueSk6IHZvaWQge1xuICBpZiAoaXNBcnJheSh2YWx1ZSkgfHwgIWlzRW1wdHkodmFsdWUpKSB7XG4gICAgc2V0PGFueSwgc3RyaW5nLCBhbnk+KG9iaiwga2V5LCB2YWx1ZSk7XG4gIH1cbn0iXX0=

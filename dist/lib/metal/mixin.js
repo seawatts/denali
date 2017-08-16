@@ -1,0 +1,68 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const assert = require("assert");
+;
+/**
+ * ES6 classes don't provide any native syntax or support for compositional mixins. This helper
+ * method provides that support:
+ *
+ *     import { mixin } from 'denali';
+ *     import MyMixin from '../mixins/my-mixin';
+ *     import ApplicationAction from './application';
+ *
+ *     export default class MyAction extends mixin(ApplicationAction, MyMixin) {
+ *       // ...
+ *     }
+ *
+ * Objects that extend from Denali's Object class automatically get a static `mixin` method to make
+ * the syntax a bit more familiar:
+ *
+ *     export default class MyAction extends ApplicationAction.mixin(MyMixin) {
+ *
+ * ## How it works
+ *
+ * Since ES6 classes are based on prototype chains, and protoype chains are purely linear (you can't
+ * have two prototypes), we implement mixins by creating anonymous intermediate subclasses for each
+ * applied mixin.
+ *
+ * Mixins are defined as factory functions that take a base class and extend it with their own
+ * mixin properties/methods. When these mixin factory functions are applied, they are called in
+ * order, with the result of the last mixin feeding into the base class of the next mixin factory.
+ *
+ * @package metal
+ */
+function mixin(baseClass, ...mixins) {
+    return mixins.reduce((currentBase, mixinFactory) => {
+        let appliedClass = mixinFactory._factory(currentBase, ...mixinFactory._args);
+        assert(typeof appliedClass === 'function', `Invalid mixin (${appliedClass}) - did you forget to return your mixin class from the createMixin method?`);
+        return appliedClass;
+    }, baseClass);
+}
+exports.default = mixin;
+/**
+ * Creates a mixin factory function wrapper. These wrapper functions have the special property that
+ * they can be invoked an arbitrary number of times, and each time will cache the arguments to be
+ * handed off to the actual factory function.
+ *
+ * This is useful to allow per-use options for your mixin. For example:
+ *
+ *     class ProtectedAction extends Action.mixin(authenticate({ ... })) {
+ *
+ * In that example, the optons object provided to the `authenticate` mixin function will be cached,
+ * and once the mixin factory function is invoked, it will be provided as an additional argument:
+ *
+ *     createMixin((BaseClass, options) => {
+ *
+ * @package metal
+ */
+function createMixin(mixinFactory) {
+    let cacheMixinArguments = function (...args) {
+        cacheMixinArguments._args.push(...args);
+        return cacheMixinArguments;
+    };
+    cacheMixinArguments._args = [];
+    cacheMixinArguments._factory = mixinFactory;
+    return cacheMixinArguments;
+}
+exports.createMixin = createMixin;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibWl4aW4uanMiLCJzb3VyY2VSb290IjoiL1VzZXJzL3NlYXdhdHRzL3NyYy9naXRodWIuY29tL3NlYXdhdHRzL2RlbmFsaS8iLCJzb3VyY2VzIjpbImxpYi9tZXRhbC9taXhpbi50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQUFBLGlDQUFpQztBQU1oQyxDQUFDO0FBTUY7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7R0E0Qkc7QUFDSCxlQUE4QixTQUFtQixFQUFFLEdBQUcsTUFBYTtJQUNqRSxNQUFNLENBQU0sTUFBTSxDQUFDLE1BQU0sQ0FBQyxDQUFDLFdBQXFCLEVBQUUsWUFBdUM7UUFDdkYsSUFBSSxZQUFZLEdBQUcsWUFBWSxDQUFDLFFBQVEsQ0FBQyxXQUFXLEVBQUUsR0FBRyxZQUFZLENBQUMsS0FBSyxDQUFDLENBQUM7UUFDN0UsTUFBTSxDQUFDLE9BQU8sWUFBWSxLQUFLLFVBQVUsRUFBRSxrQkFBbUIsWUFBYSw0RUFBNEUsQ0FBQyxDQUFDO1FBQ3pKLE1BQU0sQ0FBQyxZQUFZLENBQUM7SUFDdEIsQ0FBQyxFQUFFLFNBQVMsQ0FBQyxDQUFDO0FBQ2hCLENBQUM7QUFORCx3QkFNQztBQUVEOzs7Ozs7Ozs7Ozs7Ozs7R0FlRztBQUNILHFCQUE0QyxZQUFnQztJQUMxRSxJQUFJLG1CQUFtQixHQUEwQixVQUFTLEdBQUcsSUFBVztRQUN0RSxtQkFBbUIsQ0FBQyxLQUFLLENBQUMsSUFBSSxDQUFDLEdBQUcsSUFBSSxDQUFDLENBQUM7UUFDeEMsTUFBTSxDQUFDLG1CQUFtQixDQUFDO0lBQzdCLENBQUMsQ0FBQztJQUNGLG1CQUFtQixDQUFDLEtBQUssR0FBRyxFQUFFLENBQUM7SUFDL0IsbUJBQW1CLENBQUMsUUFBUSxHQUFHLFlBQVksQ0FBQztJQUM1QyxNQUFNLENBQUMsbUJBQW1CLENBQUM7QUFDN0IsQ0FBQztBQVJELGtDQVFDIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0ICogYXMgYXNzZXJ0IGZyb20gJ2Fzc2VydCc7XG5cbmV4cG9ydCBpbnRlcmZhY2UgTWl4aW5BcHBsaWNhdG9yPFQsIFUgZXh0ZW5kcyBUPiB7XG4gICguLi5hcmdzOiBhbnlbXSk6IE1peGluQXBwbGljYXRvcjxULCBVPjtcbiAgX2FyZ3M6IGFueVtdO1xuICBfZmFjdG9yeTogTWl4aW5GYWN0b3J5PFQsIFU+O1xufTtcblxuZXhwb3J0IGludGVyZmFjZSBNaXhpbkZhY3Rvcnk8VCwgVSBleHRlbmRzIFQ+IHtcbiAoYmFzZUNsYXNzOiBULCAuLi5hcmdzOiBhbnlbXSk6IFU7XG59XG5cbi8qKlxuICogRVM2IGNsYXNzZXMgZG9uJ3QgcHJvdmlkZSBhbnkgbmF0aXZlIHN5bnRheCBvciBzdXBwb3J0IGZvciBjb21wb3NpdGlvbmFsIG1peGlucy4gVGhpcyBoZWxwZXJcbiAqIG1ldGhvZCBwcm92aWRlcyB0aGF0IHN1cHBvcnQ6XG4gKlxuICogICAgIGltcG9ydCB7IG1peGluIH0gZnJvbSAnZGVuYWxpJztcbiAqICAgICBpbXBvcnQgTXlNaXhpbiBmcm9tICcuLi9taXhpbnMvbXktbWl4aW4nO1xuICogICAgIGltcG9ydCBBcHBsaWNhdGlvbkFjdGlvbiBmcm9tICcuL2FwcGxpY2F0aW9uJztcbiAqXG4gKiAgICAgZXhwb3J0IGRlZmF1bHQgY2xhc3MgTXlBY3Rpb24gZXh0ZW5kcyBtaXhpbihBcHBsaWNhdGlvbkFjdGlvbiwgTXlNaXhpbikge1xuICogICAgICAgLy8gLi4uXG4gKiAgICAgfVxuICpcbiAqIE9iamVjdHMgdGhhdCBleHRlbmQgZnJvbSBEZW5hbGkncyBPYmplY3QgY2xhc3MgYXV0b21hdGljYWxseSBnZXQgYSBzdGF0aWMgYG1peGluYCBtZXRob2QgdG8gbWFrZVxuICogdGhlIHN5bnRheCBhIGJpdCBtb3JlIGZhbWlsaWFyOlxuICpcbiAqICAgICBleHBvcnQgZGVmYXVsdCBjbGFzcyBNeUFjdGlvbiBleHRlbmRzIEFwcGxpY2F0aW9uQWN0aW9uLm1peGluKE15TWl4aW4pIHtcbiAqXG4gKiAjIyBIb3cgaXQgd29ya3NcbiAqXG4gKiBTaW5jZSBFUzYgY2xhc3NlcyBhcmUgYmFzZWQgb24gcHJvdG90eXBlIGNoYWlucywgYW5kIHByb3RveXBlIGNoYWlucyBhcmUgcHVyZWx5IGxpbmVhciAoeW91IGNhbid0XG4gKiBoYXZlIHR3byBwcm90b3R5cGVzKSwgd2UgaW1wbGVtZW50IG1peGlucyBieSBjcmVhdGluZyBhbm9ueW1vdXMgaW50ZXJtZWRpYXRlIHN1YmNsYXNzZXMgZm9yIGVhY2hcbiAqIGFwcGxpZWQgbWl4aW4uXG4gKlxuICogTWl4aW5zIGFyZSBkZWZpbmVkIGFzIGZhY3RvcnkgZnVuY3Rpb25zIHRoYXQgdGFrZSBhIGJhc2UgY2xhc3MgYW5kIGV4dGVuZCBpdCB3aXRoIHRoZWlyIG93blxuICogbWl4aW4gcHJvcGVydGllcy9tZXRob2RzLiBXaGVuIHRoZXNlIG1peGluIGZhY3RvcnkgZnVuY3Rpb25zIGFyZSBhcHBsaWVkLCB0aGV5IGFyZSBjYWxsZWQgaW5cbiAqIG9yZGVyLCB3aXRoIHRoZSByZXN1bHQgb2YgdGhlIGxhc3QgbWl4aW4gZmVlZGluZyBpbnRvIHRoZSBiYXNlIGNsYXNzIG9mIHRoZSBuZXh0IG1peGluIGZhY3RvcnkuXG4gKlxuICogQHBhY2thZ2UgbWV0YWxcbiAqL1xuZXhwb3J0IGRlZmF1bHQgZnVuY3Rpb24gbWl4aW4oYmFzZUNsYXNzOiBGdW5jdGlvbiwgLi4ubWl4aW5zOiBhbnlbXSk6IGFueSB7XG4gIHJldHVybiA8YW55Pm1peGlucy5yZWR1Y2UoKGN1cnJlbnRCYXNlOiBGdW5jdGlvbiwgbWl4aW5GYWN0b3J5OiBNaXhpbkFwcGxpY2F0b3I8YW55LCBhbnk+KSA9PiB7XG4gICAgbGV0IGFwcGxpZWRDbGFzcyA9IG1peGluRmFjdG9yeS5fZmFjdG9yeShjdXJyZW50QmFzZSwgLi4ubWl4aW5GYWN0b3J5Ll9hcmdzKTtcbiAgICBhc3NlcnQodHlwZW9mIGFwcGxpZWRDbGFzcyA9PT0gJ2Z1bmN0aW9uJywgYEludmFsaWQgbWl4aW4gKCR7IGFwcGxpZWRDbGFzcyB9KSAtIGRpZCB5b3UgZm9yZ2V0IHRvIHJldHVybiB5b3VyIG1peGluIGNsYXNzIGZyb20gdGhlIGNyZWF0ZU1peGluIG1ldGhvZD9gKTtcbiAgICByZXR1cm4gYXBwbGllZENsYXNzO1xuICB9LCBiYXNlQ2xhc3MpO1xufVxuXG4vKipcbiAqIENyZWF0ZXMgYSBtaXhpbiBmYWN0b3J5IGZ1bmN0aW9uIHdyYXBwZXIuIFRoZXNlIHdyYXBwZXIgZnVuY3Rpb25zIGhhdmUgdGhlIHNwZWNpYWwgcHJvcGVydHkgdGhhdFxuICogdGhleSBjYW4gYmUgaW52b2tlZCBhbiBhcmJpdHJhcnkgbnVtYmVyIG9mIHRpbWVzLCBhbmQgZWFjaCB0aW1lIHdpbGwgY2FjaGUgdGhlIGFyZ3VtZW50cyB0byBiZVxuICogaGFuZGVkIG9mZiB0byB0aGUgYWN0dWFsIGZhY3RvcnkgZnVuY3Rpb24uXG4gKlxuICogVGhpcyBpcyB1c2VmdWwgdG8gYWxsb3cgcGVyLXVzZSBvcHRpb25zIGZvciB5b3VyIG1peGluLiBGb3IgZXhhbXBsZTpcbiAqXG4gKiAgICAgY2xhc3MgUHJvdGVjdGVkQWN0aW9uIGV4dGVuZHMgQWN0aW9uLm1peGluKGF1dGhlbnRpY2F0ZSh7IC4uLiB9KSkge1xuICpcbiAqIEluIHRoYXQgZXhhbXBsZSwgdGhlIG9wdG9ucyBvYmplY3QgcHJvdmlkZWQgdG8gdGhlIGBhdXRoZW50aWNhdGVgIG1peGluIGZ1bmN0aW9uIHdpbGwgYmUgY2FjaGVkLFxuICogYW5kIG9uY2UgdGhlIG1peGluIGZhY3RvcnkgZnVuY3Rpb24gaXMgaW52b2tlZCwgaXQgd2lsbCBiZSBwcm92aWRlZCBhcyBhbiBhZGRpdGlvbmFsIGFyZ3VtZW50OlxuICpcbiAqICAgICBjcmVhdGVNaXhpbigoQmFzZUNsYXNzLCBvcHRpb25zKSA9PiB7XG4gKlxuICogQHBhY2thZ2UgbWV0YWxcbiAqL1xuZXhwb3J0IGZ1bmN0aW9uIGNyZWF0ZU1peGluPFQsIFUgZXh0ZW5kcyBUPihtaXhpbkZhY3Rvcnk6IE1peGluRmFjdG9yeTxULCBVPik6IE1peGluQXBwbGljYXRvcjxULCBVPiB7XG4gIGxldCBjYWNoZU1peGluQXJndW1lbnRzID0gPE1peGluQXBwbGljYXRvcjxULCBVPj5mdW5jdGlvbiguLi5hcmdzOiBhbnlbXSk6IE1peGluQXBwbGljYXRvcjxULCBVPiB7XG4gICAgY2FjaGVNaXhpbkFyZ3VtZW50cy5fYXJncy5wdXNoKC4uLmFyZ3MpO1xuICAgIHJldHVybiBjYWNoZU1peGluQXJndW1lbnRzO1xuICB9O1xuICBjYWNoZU1peGluQXJndW1lbnRzLl9hcmdzID0gW107XG4gIGNhY2hlTWl4aW5Bcmd1bWVudHMuX2ZhY3RvcnkgPSBtaXhpbkZhY3Rvcnk7XG4gIHJldHVybiBjYWNoZU1peGluQXJndW1lbnRzO1xufVxuIl19
