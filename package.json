@@ -46,7 +46,6 @@
     "preversion": "scripts/preversion.sh",
     "release": "scripts/release.sh",
     "test": "scripts/test.sh",
-    "prepublish": "in-publish && echo \"Use 'denali publish' instead.\" && exit 1 || not-in-publish",
     "update-yarn-lock-file": "update-yarn-lock-file"
   },
   "license": "MIT",

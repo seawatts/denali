@@ -1,0 +1,23 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const denali_cli_1 = require("denali-cli");
+/**
+ * Generates a blank service
+ *
+ * @package blueprints
+ */
+class ServiceBlueprint extends denali_cli_1.Blueprint {
+}
+/* tslint:disable:completed-docs typedef */
+ServiceBlueprint.blueprintName = 'service';
+ServiceBlueprint.description = 'Generates a blank service';
+ServiceBlueprint.longDescription = denali_cli_1.unwrap `
+    Usage: denali generate service <name> [options]
+
+    Generates a blank service class.
+
+    Guides: http://denalijs.org/master/guides/application/services/
+  `;
+ServiceBlueprint.params = '<name>';
+exports.default = ServiceBlueprint;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VSb290IjoiL1VzZXJzL3NlYXdhdHRzL3NyYy9naXRodWIuY29tL3NlYXdhdHRzL2RlbmFsaS8iLCJzb3VyY2VzIjpbImJsdWVwcmludHMvc2VydmljZS9pbmRleC50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQUFBLDJDQUErQztBQUUvQzs7OztHQUlHO0FBQ0gsc0JBQXNDLFNBQVEsc0JBQVM7O0FBRXJELDJDQUEyQztBQUNwQyw4QkFBYSxHQUFHLFNBQVMsQ0FBQztBQUMxQiw0QkFBVyxHQUFHLDJCQUEyQixDQUFDO0FBQzFDLGdDQUFlLEdBQUcsbUJBQU0sQ0FBQTs7Ozs7O0dBTTlCLENBQUM7QUFFSyx1QkFBTSxHQUFHLFFBQVEsQ0FBQztBQWIzQixtQ0FlQyIsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IEJsdWVwcmludCwgdW53cmFwIH0gZnJvbSAnZGVuYWxpLWNsaSc7XG5cbi8qKlxuICogR2VuZXJhdGVzIGEgYmxhbmsgc2VydmljZVxuICpcbiAqIEBwYWNrYWdlIGJsdWVwcmludHNcbiAqL1xuZXhwb3J0IGRlZmF1bHQgY2xhc3MgU2VydmljZUJsdWVwcmludCBleHRlbmRzIEJsdWVwcmludCB7XG5cbiAgLyogdHNsaW50OmRpc2FibGU6Y29tcGxldGVkLWRvY3MgdHlwZWRlZiAqL1xuICBzdGF0aWMgYmx1ZXByaW50TmFtZSA9ICdzZXJ2aWNlJztcbiAgc3RhdGljIGRlc2NyaXB0aW9uID0gJ0dlbmVyYXRlcyBhIGJsYW5rIHNlcnZpY2UnO1xuICBzdGF0aWMgbG9uZ0Rlc2NyaXB0aW9uID0gdW53cmFwYFxuICAgIFVzYWdlOiBkZW5hbGkgZ2VuZXJhdGUgc2VydmljZSA8bmFtZT4gW29wdGlvbnNdXG5cbiAgICBHZW5lcmF0ZXMgYSBibGFuayBzZXJ2aWNlIGNsYXNzLlxuXG4gICAgR3VpZGVzOiBodHRwOi8vZGVuYWxpanMub3JnL21hc3Rlci9ndWlkZXMvYXBwbGljYXRpb24vc2VydmljZXMvXG4gIGA7XG5cbiAgc3RhdGljIHBhcmFtcyA9ICc8bmFtZT4nO1xuXG59XG4iXX0=
