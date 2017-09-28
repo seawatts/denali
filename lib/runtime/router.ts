@@ -5,10 +5,11 @@ import { fromNode } from 'bluebird';
 import * as createDebug from 'debug';
 import Errors from './errors';
 import Route from './route';
-import Request, { Method } from './request';
+import Request from './request';
 import ensureArray = require('arrify');
 import DenaliObject from '../metal/object';
 import Container from '../metal/container';
+import ConfigService from './config';
 import Action from './action';
 import {
   find,
@@ -18,15 +19,15 @@ import {
 const debug = createDebug('denali:router');
 
 export interface RoutesCache {
-  get: Route[];
-  post: Route[];
-  put: Route[];
-  patch: Route[];
-  delete: Route[];
-  head: Route[];
-  options: Route[];
+  GET: Route[];
+  POST: Route[];
+  PUT: Route[];
+  PATCH: Route[];
+  DELETE: Route[];
+  HEAD: Route[];
+  OPTIONS: Route[];
   [method: string]: Route[];
-};
+}
 
 export interface MiddlewareFn {
   (req: IncomingMessage, res: ServerResponse, next: Function): void;
@@ -76,25 +77,29 @@ export default class Router extends DenaliObject implements RouterDSL {
    * The cache of available routes.
    */
   routes: RoutesCache = {
-    get: [],
-    post: [],
-    put: [],
-    patch: [],
-    delete: [],
-    head: [],
-    options: []
+    GET: [],
+    POST: [],
+    PUT: [],
+    PATCH: [],
+    DELETE: [],
+    HEAD: [],
+    OPTIONS: []
   };
 
   /**
    * The internal generic middleware handler, responsible for building and executing the middleware
    * chain.
    */
-  private middleware: any = (<() => any>ware)();
+  protected middleware: any = (<() => any>ware)();
 
   /**
    * The application container
    */
   container: Container;
+
+  get config(): ConfigService {
+    return this.container.lookup('service:config');
+  }
 
   /**
    * Helper method to invoke the function exported by `config/routes.js` in the context of the
@@ -113,7 +118,8 @@ export default class Router extends DenaliObject implements RouterDSL {
    * finally renders the response.
    */
   async handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
-    let request = new Request(req);
+    let serverConfig = this.config.get('server');
+    let request = new Request(req, serverConfig);
     try {
 
       debug(`[${ request.id }]: ${ request.method.toUpperCase() } ${ request.path }`);
@@ -124,17 +130,23 @@ export default class Router extends DenaliObject implements RouterDSL {
       // Find the matching route
       debug(`[${ request.id }]: routing request`);
       let routes = this.routes[request.method];
-      for (let i = 0; i < routes.length; i += 1) {
-        request.params = routes[i].match(request.path);
-        if (request.params) {
-          request.route = routes[i];
-          break;
+      if (routes) {
+        /* tslint:disable-next-line prefer-for-of */
+        for (let i = 0; i < routes.length; i += 1) {
+          request.params = routes[i].match(request.path);
+          if (request.params) {
+            request.route = routes[i];
+            break;
+          }
         }
       }
       // Handle 404s
       if (!request.route) {
-        debug(`[${ request.id }]: ${ request.method } ${ request.path } did match any route. Available ${ request.method } routes:\n${ routes.map((r) => r.spec).join(',\n') }`);
-        throw new Errors.NotFound('Route not recognized');
+        let availableRoutes =  routes && routes.map((r) => r.spec);
+        debug(`[${ request.id }]: ${ request.method } ${ request.path } did match any route. Available ${ request.method } routes:\n${ availableRoutes.join(',\n') || 'none' }`);
+        let error = new Errors.NotFound('Route not recognized');
+        error.meta = { availableRoutesForMethod: routes || [] };
+        throw error;
       }
 
       // Create our action to handle the response
@@ -153,7 +165,7 @@ export default class Router extends DenaliObject implements RouterDSL {
    * Takes a request, response, and an error and hands off to the generic application level error
    * action.
    */
-  private async handleError(request: Request, res: ServerResponse, error: Error) {
+  protected async handleError(request: Request, res: ServerResponse, error: Error) {
     request.params = request.params || {};
     request.params.error = error;
     let errorAction = this.container.lookup('action:error');
@@ -183,7 +195,8 @@ export default class Router extends DenaliObject implements RouterDSL {
    *
    * @since 0.1.0
    */
-  route(method: Method, rawPattern: string, actionPath: string, params?: any) {
+  route(method: string, rawPattern: string, actionPath: string, params?: any) {
+    method = method.toUpperCase();
     // Ensure leading slashes
     let normalizedPattern = rawPattern.replace(/^([^/])/, '/$1');
     // Remove hardcoded trailing slashes
@@ -351,7 +364,7 @@ export default class Router extends DenaliObject implements RouterDSL {
       [ 'replace-related', 'patch', relationship ],
       [ 'add-related', 'post', relationship ],
       [ 'remove-related', 'delete', relationship ]
-    ].forEach((routeTemplate: [ string, Method, string ]) => {
+    ].forEach((routeTemplate: [ string, string, string ]) => {
       let [ action, method, url ] = routeTemplate;
       if (include(action)) {
         let routeMethod = <(url: string, action: string) => void>this[method];

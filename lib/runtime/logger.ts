@@ -44,7 +44,7 @@ export default class Logger extends DenaliObject {
   /**
    * Color map for the available levels.
    */
-  colors: { [level: string]: chalk.ChalkChain } = {
+  colors: { [level: string]: (...text: string[]) => string } = {
     info: chalk.white,
     debug: chalk.cyan,
     warn: chalk.yellow,

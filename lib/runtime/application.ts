@@ -13,6 +13,7 @@ import Addon from './addon';
 import topsort from '../utils/topsort';
 import Router from './router';
 import Logger from './logger';
+import { AppConfig } from './config';
 import Container from '../metal/container';
 import findPlugins from 'find-plugins';
 import * as tryRequire from 'try-require';
@@ -20,6 +21,22 @@ import * as createDebug from 'debug';
 import { Vertex } from '../utils/topsort';
 
 const debug = createDebug('denali:application');
+
+export interface AppConfigBuilder {
+  (environment: string, container: Container): AppConfig;
+}
+
+export interface AddonConfigBuilder {
+  (environment: string, container: Container, config: AppConfig): void;
+}
+
+export interface MiddlewareBuilder {
+  (router: Router, application: Application): void;
+}
+
+export interface RoutesMap {
+  (router: Router, application: Application): void;
+}
 
 /**
  * Options for instantiating an application
@@ -119,15 +136,19 @@ export default class Application extends Addon {
   /**
    * Given a directory that contains an addon, load that addon and instantiate it's Addon class.
    */
-  private buildAddons(preseededAddons: string[]): Addon[] {
+  protected buildAddons(preseededAddons: string[]): Addon[] {
     return findPlugins({
       dir: this.dir,
       keyword: 'denali-addon',
       include: preseededAddons
     }).map((plugin) => {
       let AddonClass;
+      let distDir = plugin.dir;
+      if (plugin.pkg.mainDir) {
+        distDir = path.join(plugin.dir, plugin.pkg.mainDir);
+      }
       try {
-        AddonClass = tryRequire(path.join(plugin.dir, 'app', 'addon.js'));
+        AddonClass = tryRequire(path.join(distDir, 'app', 'addon.js'));
         AddonClass = AddonClass || Addon;
       } catch (e) {
         /* tslint:disable:no-console */
@@ -140,7 +161,7 @@ export default class Application extends Addon {
       let addon = new AddonClass({
         environment: this.environment,
         container: this.container,
-        dir: plugin.dir,
+        dir: distDir,
         pkg: plugin.pkg
       });
       debug(`Addon: ${ addon.pkg.name }@${ addon.pkg.version } (${ addon.dir }) `);
@@ -162,15 +183,20 @@ export default class Application extends Addon {
    * - Addons are given a chance to modify the application config, so it must be loaded before they
    *   are.
    */
-  private generateConfig(): any {
-    let appConfig = this.resolver.retrieve('config:environment') || constant({});
-    let config = appConfig(this.environment);
+  protected generateConfig(): any {
+    let appConfig = this.resolver.retrieve<AppConfigBuilder>('config:environment') || <AppConfigBuilder>constant({
+      environment: 'development',
+      server: {
+        port: 3000
+      }
+    });
+    let config = appConfig(this.environment, this.container);
     config.environment = this.environment;
     this.container.register('config:environment', config);
     this.addons.forEach((addon) => {
-      let addonConfig = addon.resolver.retrieve('config:environment');
+      let addonConfig = addon.resolver.retrieve<AddonConfigBuilder>('config:environment');
       if (addonConfig) {
-        addonConfig(this.environment, config);
+        addonConfig(this.environment, this.container, config);
       }
     });
     return config;
@@ -179,22 +205,22 @@ export default class Application extends Addon {
   /**
    * Assemble middleware and routes
    */
-  private compileRouter(): void {
+  protected compileRouter(): void {
     // Load addon middleware first
     this.addons.forEach((addon) => {
-      let addonMiddleware = addon.resolver.retrieve('config:middleware') || noop;
+      let addonMiddleware = addon.resolver.retrieve<MiddlewareBuilder>('config:middleware') || noop;
       addonMiddleware(this.router, this);
     });
     // Then load app middleware
-    let appMiddleware = this.resolver.retrieve('config:middleware') || noop;
+    let appMiddleware = this.resolver.retrieve<MiddlewareBuilder>('config:middleware') || noop;
     appMiddleware(this.router, this);
     // Load app routes first so they have precedence
-    let appRoutes = this.resolver.retrieve('config:routes') || noop;
+    let appRoutes = this.resolver.retrieve<RoutesMap>('config:routes') || noop;
     appRoutes(this.router, this);
     // Load addon routes in reverse order so routing precedence matches addon load order
     this.addons.reverse().forEach((addon) => {
-      let addonRoutes = addon.resolver.retrieve('config:routes') || noop;
-      addonRoutes(this.router);
+      let addonRoutes = addon.resolver.retrieve<RoutesMap>('config:routes') || noop;
+      addonRoutes(this.router, this);
     });
   }
 
@@ -222,7 +248,7 @@ export default class Application extends Addon {
    * Creates an HTTP or HTTPS server, depending on whether or not SSL configuration is present in
    * config/environment.js
    */
-  private async createServer(port: number): Promise<void> {
+  protected async createServer(port: number): Promise<void> {
     await new Promise((resolve) => {
       let handler = this.router.handle.bind(this.router);
       let server: any;

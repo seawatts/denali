@@ -9,9 +9,10 @@ import * as tryRequire from 'try-require';
 import { pluralize } from 'inflection';
 import requireDir from '../utils/require-dir';
 import * as assert from 'assert';
+import * as createDebug from 'debug';
 
-interface RetrieveMethod {
-  (type: string, entry: string): any;
+interface RetrieveMethod<T> {
+  (type: string, entry: string): T;
 }
 
 export interface AvailableForTypeMethod {
@@ -32,10 +33,11 @@ export default class Resolver {
   /**
    * The internal cache of available references
    */
-  private registry: Registry = new Map();
+  protected registry: Registry = new Map();
 
   constructor(root: string) {
     assert(root, 'You must supply a valid root path that the resolve should use to load from');
+    this.debug = createDebug(`silly-denali:resolver:${ root }`);
     this.root = root;
   }
 
@@ -53,24 +55,30 @@ export default class Resolver {
    * members, then falls back to type specific retrieve methods that typically find the matching
    * file on the filesystem.
    */
-  retrieve(specifier: string) {
+  retrieve<T>(specifier: string): T {
     assert(specifier.includes(':'), 'Container specifiers must be in "type:entry" format');
+    this.debug(`retrieving ${ specifier }`);
     let [ type, entry ] = specifier.split(':');
     if (this.registry.has(specifier)) {
+      this.debug(`cache hit, returning cached value`);
       return this.registry.get(specifier);
     }
-    let retrieveMethod = <RetrieveMethod>this[`retrieve${ upperFirst(camelCase(type)) }`];
+    let retrieveMethod = <RetrieveMethod<T>>this[`retrieve${ upperFirst(camelCase(type)) }`];
     if (!retrieveMethod) {
       retrieveMethod = this.retrieveOther;
     }
+    this.debug(`retrieving via retrieve${ upperFirst(camelCase(type)) }`);
     let result = retrieveMethod.call(this, type, entry);
-    return result && result.default || result;
+    result = result && result.default || result;
+    this.debug('retrieved %o', result);
+    return result;
   }
 
   /**
    * Unknown types are assumed to exist underneath the `app/` folder
    */
   protected retrieveOther(type: string, entry: string) {
+    this.debug(`attempting to retrieve ${ type }:${ entry } from ${ path.join(this.root, 'app', pluralize(type), entry) }`);
     return tryRequire(path.join(this.root, 'app', pluralize(type), entry));
   }
 
@@ -78,6 +86,7 @@ export default class Resolver {
    * App files are found in `app/*`
    */
   protected retrieveApp(type: string, entry: string) {
+    this.debug(`attempting to retrieve ${ type }:${ entry } from ${ path.join(this.root, 'app', entry) }`);
     return tryRequire(path.join(this.root, 'app', entry));
   }
 
@@ -85,6 +94,7 @@ export default class Resolver {
    * Config files are found in `config/`
    */
   protected retrieveConfig(type: string, entry: string) {
+    this.debug(`attempting to retrieve ${ type }:${ entry } from ${ path.join(this.root, 'config', entry) }`);
     return tryRequire(path.join(this.root, 'config', entry));
   }
 
@@ -92,6 +102,7 @@ export default class Resolver {
    * Initializer files are found in `config/initializers/`
    */
   protected retrieveInitializer(type: string, entry: string) {
+    this.debug(`attempting to retrieve ${ type }:${ entry } from ${ path.join(this.root, 'config', 'initializers', entry) }`);
     return tryRequire(path.join(this.root, 'config', 'initializers', entry));
   }
 

@@ -7,7 +7,6 @@ import * as cookies from 'cookie-parser';
 import * as cors from 'cors';
 import * as helmet from 'helmet';
 import * as morgan from 'morgan';
-import { json } from 'body-parser';
 import { IncomingMessage, ServerResponse } from 'http';
 import Router from '../lib/runtime/router';
 import Application from '../lib/runtime/application';
@@ -48,7 +47,12 @@ export default function baseMiddleware(router: Router, application: Application)
     // Patch morgan to read from our non-express response
     morgan.token('res', (req: IncomingMessage, res: ServerResponse, field: string) => {
       let header = res.getHeader(field);
-      return Array.isArray(header) ? header.join(', ') : header;
+      if (typeof header === 'number') {
+        header = String(header);
+      } else if (Array.isArray(header)) {
+        header = header.join(', ');
+      }
+      return header;
     });
   }
 
@@ -82,10 +86,6 @@ export default function baseMiddleware(router: Router, application: Application)
 
   if (isEnabled('noSniff')) {
     router.use(helmet.noSniff());
-  }
-
-  if (isEnabled('bodyParser')) {
-    router.use(json({ type: config.bodyParser && config.bodyParser.type }));
   }
 
 }

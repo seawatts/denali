@@ -2,6 +2,99 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.0.33"></a>
+## [0.0.33](https://github.com/denali-js/denali/compare/v0.0.32...v0.0.33) (2017-09-19)
+
+
+### Bug Fixes
+
+* **blueprints:** fix service blueprint naming; fixes [#380](https://github.com/denali-js/denali/issues/380) ([90ecd25](https://github.com/denali-js/denali/commit/90ecd25))
+* add back constructor for request object so it actually can get the IncomingMessage :facepalm: ([477b942](https://github.com/denali-js/denali/commit/477b942))
+* fix type issues with yargs argv in generate/destory commands ([93ba779](https://github.com/denali-js/denali/commit/93ba779))
+* fix typo in import path ([1c94468](https://github.com/denali-js/denali/commit/1c94468))
+* make resolution paths for non-relative imports start at denali source directory, not the consuming app/addon directory ([eccfedd](https://github.com/denali-js/denali/commit/eccfedd))
+* use getter and container.lookup for now since request object cannot use inject helper (yet) ([a39de10](https://github.com/denali-js/denali/commit/a39de10))
+* use local yargs import rather than reaching into denali-cli ([504c936](https://github.com/denali-js/denali/commit/504c936))
+* **runtime:** changing ResponderParams to be more loosely typed ([#391](https://github.com/denali-js/denali/issues/391)) ([19935f4](https://github.com/denali-js/denali/commit/19935f4))
+
+
+### Features
+
+* add config service ([#386](https://github.com/denali-js/denali/issues/386)) ([8a349c2](https://github.com/denali-js/denali/commit/8a349c2))
+* express compatible requests ([#387](https://github.com/denali-js/denali/issues/387)) ([c20a5ef](https://github.com/denali-js/denali/commit/c20a5ef))
+* pass container to config to allow per-environment container overrides ([#363](https://github.com/denali-js/denali/issues/363)); fix [#361](https://github.com/denali-js/denali/issues/361) ([d42d85d](https://github.com/denali-js/denali/commit/d42d85d))
+* **runtime:** Parsers do body parsing ([#392](https://github.com/denali-js/denali/issues/392)) ([15d9e8d](https://github.com/denali-js/denali/commit/15d9e8d))
+
+
+
+<a name="0.0.32"></a>
+## [0.0.32](https://github.com/denali-js/denali/compare/v0.0.31...v0.0.32) (2017-09-02)
+
+
+### Bug Fixes
+
+* fix debug arguments for test command; use --inspect-brk instead of deprecated --debug-brk ([95d6fc1](https://github.com/denali-js/denali/commit/95d6fc1))
+* **test:** ensure ava and dummy app use main-dir ([0748916](https://github.com/denali-js/denali/commit/0748916))
+
+
+### Features
+
+* pass along test build output dir to tests, use as base dir for app acceptance test helper ([00d64ac](https://github.com/denali-js/denali/commit/00d64ac))
+* remove outputdir option for test command, everything goes in tmp ([8b2bd9d](https://github.com/denali-js/denali/commit/8b2bd9d))
+
+
+
+<a name="0.0.31"></a>
+## [0.0.31](https://github.com/denali-js/denali/compare/v0.0.29...v0.0.31) (2017-08-30)
+
+
+### Bug Fixes
+
+* **build:** use broccoli-typescript-compiler now that PRs have merged ([a964741](https://github.com/denali-js/denali/commit/a964741))
+* **data:** improve typing for defineModels stub ([716d3d7](https://github.com/denali-js/denali/commit/716d3d7))
+* **data:** only try to defineModels if the adapter supports it ([5539006](https://github.com/denali-js/denali/commit/5539006))
+* **metal:** use global symbol for container injection flags to allow multiple denali versions to work with a single container ([ea7d0e6](https://github.com/denali-js/denali/commit/ea7d0e6))
+* **model:** use upperFirst instead for dynamic model methods ([#357](https://github.com/denali-js/denali/issues/357)) ([58b2184](https://github.com/denali-js/denali/commit/58b2184))
+* **runtime:** make options optional on resource route ([#367](https://github.com/denali-js/denali/issues/367)) ([96b1205](https://github.com/denali-js/denali/commit/96b1205))
+* **runtime:** use main dir as base dir for addons at runtime ([f98e3f4](https://github.com/denali-js/denali/commit/f98e3f4))
+* add missing imports to denali-build.js ([277ad8f](https://github.com/denali-js/denali/commit/277ad8f))
+* add sanity checks ([c57ed30](https://github.com/denali-js/denali/commit/c57ed30))
+* **test:** wait to require ava until we are sure we are in tests, because it hard exits the process otherwise ([6d09ad2](https://github.com/denali-js/denali/commit/6d09ad2))
+* default to no audit for build only, since the build often finishes faster than the nsp request, which makes it look like a hang (and the audit is less useful for standard build invocations ([e1f84e7](https://github.com/denali-js/denali/commit/e1f84e7))
+* export relationship descriptor subclasses ([accbe4b](https://github.com/denali-js/denali/commit/accbe4b))
+* point to dist for types so typescript can resolve module ([42f80d0](https://github.com/denali-js/denali/commit/42f80d0))
+* switch to protected from private, since private causes problems and protected is often the better choice regardlesss ([059e57d](https://github.com/denali-js/denali/commit/059e57d))
+
+
+### Features
+
+* **metal:** add teardown hooks ([#360](https://github.com/denali-js/denali/issues/360)) ([7b5d15e](https://github.com/denali-js/denali/commit/7b5d15e)), closes [#351](https://github.com/denali-js/denali/issues/351)
+* **render:** allow dynamic attributes and relationships on serializers ([#359](https://github.com/denali-js/denali/issues/359)) ([03c1683](https://github.com/denali-js/denali/commit/03c1683)), closes [#347](https://github.com/denali-js/denali/issues/347)
+* **render:** allow this.render() calls to override serializer attribute and relationship whitelists ([#362](https://github.com/denali-js/denali/issues/362)) ([e19a795](https://github.com/denali-js/denali/commit/e19a795)), closes [#347](https://github.com/denali-js/denali/issues/347)
+* **test:** typed acceptance test contexts! ([5241884](https://github.com/denali-js/denali/commit/5241884))
+* use main-dir package and publish project root; see [#371](https://github.com/denali-js/denali/issues/371) ([3c67fba](https://github.com/denali-js/denali/commit/3c67fba))
+
+
+
+<a name="0.0.30"></a>
+# [0.0.30](https://github.com/denali-js/denali/compare/v0.0.29...v0.0.30) (2017-07-13)
+
+
+### Bug Fixes
+
+* **metal:** use global symbol for container injection flags to allow multiple denali versions to work with a single container ([ea7d0e6](https://github.com/denali-js/denali/commit/ea7d0e6))
+* **model:** use upperFirst instead for dynamic model methods (#357) ([58b2184](https://github.com/denali-js/denali/commit/58b2184))
+* add sanity checks ([c57ed30](https://github.com/denali-js/denali/commit/c57ed30))
+
+
+### Features
+
+* **metal:** add teardown hooks (#360) ([7b5d15e](https://github.com/denali-js/denali/commit/7b5d15e)), closes [#351](https://github.com/denali-js/denali/issues/351)
+* **render:** allow dynamic attributes and relationships on serializers (#359) ([03c1683](https://github.com/denali-js/denali/commit/03c1683)), closes [#347](https://github.com/denali-js/denali/issues/347)
+* **render:** allow this.render() calls to override serializer attribute and relationship whitelists (#362) ([e19a795](https://github.com/denali-js/denali/commit/e19a795)), closes [#347](https://github.com/denali-js/denali/issues/347)
+
+
+
 <a name="0.0.29"></a>
 # [0.0.29](https://github.com/denali-js/denali/compare/v0.0.28...v0.0.29) (2017-07-02)
 

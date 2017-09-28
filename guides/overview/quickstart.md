@@ -17,7 +17,7 @@ $ npm install -g denali-cli denali
 
 ## Scaffolding our application
 
-> Note: Denali requires you to use Node 6.0 or greater.
+> Note: Denali requires you to use Node 7.0 or greater.
 
 Next, let's use Denali's handy scaffolding tools to create a blank slate for us
 to start from:
@@ -160,7 +160,7 @@ import ApplicationAction from './application';
 export default class IndexAction extends ApplicationAction {
 
   respond() {
-    this.render(200, { message: 'Welcome to Denali!' }, { serializer: 'raw' });
+    this.render(200, { message: 'Welcome to Denali!' }, { serializer: 'json' });
   }
 
 }
@@ -178,7 +178,7 @@ Let's break down what's going on here:
 
   * `this.render(...)` - tells Denali to render the follow as the response. In
     this case, it says to render an HTTP 200 status code, with the `message`
-    object as the payload, and use the `'raw'` serializer to format the response
+    object as the payload, and use the `'json'` serializer to format the response
     body (which in this case, simply `JSON.stringify()`s the payload).
 
 The end result here is an action which will always respond with the same JSON

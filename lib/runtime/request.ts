@@ -1,27 +1,21 @@
-import {
-  dropRight
-} from 'lodash';
-import * as accepts from 'accepts';
-import * as typeis from 'type-is';
-import * as url from 'url';
-import * as http from 'http';
-import * as uuid from 'uuid';
-import { Socket } from 'net';
-import { Readable, Writable } from 'stream';
+import { Dict } from '../utils/types';
 import Route from './route';
-
-/**
- * Available HTTP methods (lowercased)
- *
- * @package runtime
- * @since 0.1.0
- */
-export type Method = 'get' | 'post' | 'put' | 'patch' | 'delete' | 'head' | 'options';
+import { AppConfig } from './config';
+import { constant } from 'lodash';
+import * as accepts from 'accepts';
+import { isIP } from 'net';
+import { TLSSocket } from 'tls';
+import * as typeis from 'type-is';
+import * as http from 'http';
+import * as https from 'https';
+import * as parseRange from 'range-parser';
+import * as parse from 'parseurl';
+import * as proxyaddr from 'proxy-addr';
+import * as uuid from 'uuid';
+import * as qs from 'querystring';
 
 /**
  * The Request class represents an incoming HTTP request (specifically, Node's IncomingMessage).
- * It's designed with an express-compatible interface to allow interop with existing express
- * middleware.
  *
  * @package runtime
  * @since 0.1.0
@@ -33,17 +27,7 @@ export default class Request {
    *
    * @since 0.1.0
    */
-  id: string;
-
-  /**
-   * The parsed URL of the IncomingMessage
-   */
-  private parsedUrl: url.Url;
-
-  /**
-   * The original IncomingMessage from the HTTP library.
-   */
-  private _incomingMessage: http.IncomingMessage;
+  id: string = uuid.v4();
 
   /**
    * The route parser route that was matched
@@ -53,345 +37,364 @@ export default class Request {
   route: Route;
 
   /**
-   * The requests params extracted from the route parser (i.e. just the URL segement params)
+   * The name of the original action that was invoked - useful for error actions to create
+   * helpful debug messages.
+   *
+   * @since 0.1.0
+   */
+  _originalAction: string;
+
+  /**
+   * The underlying HTTP server's IncomingMessage instance
+   *
+   * @since 0.1.0
+   */
+  incomingMessage: http.IncomingMessage | https.IncomingMessage;
+
+  /**
+   * A subset of the app config, the `config.server` namespace
+   *
+   * @since 0.1.0
+   */
+  config: AppConfig['server'];
+
+  /**
+   * The uppercase method name for the request, i.e. GET, POST, HEAD
+   *
+   * @since 0.1.0
+   */
+  get method(): string {
+    return this.incomingMessage.method.toUpperCase();
+  }
+
+  /**
+   * The requested path name
+   *
+   * @since 0.1.0
+   */
+  get path(): string {
+    return parse(this.incomingMessage).pathname;
+  }
+
+  /**
+   * The params extracted from the router's dynamic segments
    *
    * @since 0.1.0
    */
   params: any;
 
   /**
-   * baseUrl of the app, needed to simulate Express request api
+   * The query string, parsed into an object
    *
    * @since 0.1.0
    */
-  baseUrl = '/';
+  get query(): Dict<string> {
+    return qs.parse(parse(this.incomingMessage).query);
+  }
 
   /**
-   * Url of the request -> can be modified
+   * The headers for the incoming request
    *
    * @since 0.1.0
    */
-  url: string;
+  get headers(): Dict<string | string[]> {
+    return this.incomingMessage.headers;
+  }
 
   /**
-   * The incoming request body, buffered and parsed by the serializer (if applicable)
+   * Return subdomains as an array.
    *
-   * @since 0.1.0
-   */
-  get body(): any {
-    return (<any>this._incomingMessage).body;
-  }
-  set body(value) {
-    (<any>this._incomingMessage).body = value;
-  }
-
-  /**
-   * The name of the original action that was invoked for this request. Used when an error occurs
-   * so the error action can see the original action that was invoked.
-   */
-  _originalAction: string;
-
-  constructor(incomingMessage: http.IncomingMessage) {
-    this._incomingMessage = incomingMessage;
-    this.parsedUrl = url.parse(incomingMessage.url, true);
-    this.url = this.parsedUrl.pathname;
-    this.id = uuid.v4();
-  }
-
-  /**
-   * The HTTP method of the request, lowercased
+   * Subdomains are the dot-separated parts of the host before the main domain
+   * of the app. By default, the domain of the app is assumed to be the last
+   * two parts of the host. This can be changed by setting
+   * config.server.subdomainOffset
    *
-   * @since 0.1.0
-   */
-  get method(): Method {
-    return <Method>this._incomingMessage.method.toLowerCase();
-  }
-
-  /**
-   * The host name specified in the request (not including port number)
-   *
-   * @since 0.1.0
-   */
-  get hostname(): string {
-    let host = this.get('host');
-    return (host || '').split(':')[0];
-  }
-
-  /**
-   * The IP address of the incoming request's connection
-   *
-   * @since 0.1.0
-   */
-  get ip(): string {
-    return this._incomingMessage.socket.remoteAddress;
-  }
-
-  /**
-   * The original path, without any modifications by middleware
-   * or the router.
-   *
-   * TODO: when denali supports mounting on a subpath, this should
-   *       be updated to reflect the full path, and the path variable
-   *       in this class will be the path *after* the subpath
-   *
-   * @since 0.1.0
-   */
-  get originalUrl(): string {
-    return this.parsedUrl.pathname;
-  }
-
-  /**
-   * The path extracted from the URL of the incoming request.
-   *
-   * @since 0.1.0
-   */
-  get path(): string {
-    return this.parsedUrl.pathname;
-  }
-
-  /**
-   * The protocol extracted from the URL of the incoming request
-   *
-   * @since 0.1.0
-   */
-  get protocol(): string {
-    return this.parsedUrl.protocol.toLowerCase();
-  }
-
-  /**
-   * The query params supplied with the request URL, parsed into an object
-   *
-   * @since 0.1.0
-   */
-  get query(): { [key: string]: string } {
-    return this.parsedUrl.query;
-  }
-
-  /**
-   * Whether or not this request was made over https
-   *
-   * @since 0.1.0
-   */
-  get secure(): boolean {
-    return this.protocol === 'https:';
-  }
-
-  /**
-   * Whether or not this request was made by a client library
-   *
-   * @since 0.1.0
-   */
-  get xhr(): boolean {
-    return this.get('x-requested-with') === 'XMLHttpRequest';
-  }
-
-  /**
-   * The headers of the incoming request
-   *
-   * @since 0.1.0
-   */
-  get headers(): { [key: string]: string } {
-    return this._incomingMessage.headers;
-  }
-
-  /**
-   * An array of subdomains of the incoming request:
-   *     // GET foo.bar.example.com
-   *     request.subdomains  // [ 'foo', 'bar' ]
+   * For example, if the domain is "tobi.ferrets.example.com": If the subdomain
+   * offset is not set, req.subdomains is `["ferrets", "tobi"]`. If the
+   * subdomain offset is 3, req.subdomains is `["tobi"]`.
    *
    * @since 0.1.0
    */
   get subdomains(): string[] {
-    // Drop the tld and root domain name
-    return dropRight(this.hostname.split('.'), 2);
-  }
-
-  /*
-   * Additional public properties of the IncomingMessage object
-   */
-
-  get httpVersion(): string {
-    return this._incomingMessage.httpVersion;
-  }
-
-  get rawHeaders(): string[] {
-    return this._incomingMessage.rawHeaders;
-  }
-
-  get rawTrailers(): string[] {
-    return this._incomingMessage.rawTrailers;
-  }
-
-  get socket(): Socket {
-    return this._incomingMessage.socket;
-  }
-
-  get statusCode(): number {
-    return this._incomingMessage.statusCode;
-  }
-
-  get statusMessage(): string {
-    return this._incomingMessage.statusMessage;
-  }
-
-  get trailers(): { [key: string]: string } {
-    return this._incomingMessage.trailers;
-  }
-
-  get connection(): Socket {
-    return this._incomingMessage.connection;
+    let hostname = this.hostname;
+    if (!hostname) {
+      return [];
+    }
+    let offset = this.config.subdomainOffset;
+    let subdomains = !isIP(hostname) ? hostname.split('.').reverse() : [ hostname ];
+    return subdomains.slice(offset == null ? 2 : offset);
   }
 
   /**
-   * Returns the best match for content types, or false if no match is possible. See the docs for
-   * the `accepts` module on npm for more details.
+   * Return the protocol string "http" or "https" when requested with TLS. When
+   * the "server.trustProxy" setting trusts the socket address, the
+   * "X-Forwarded-Proto" header field will be trusted and used if present.
+   *
+   * If you're running behind a reverse proxy that supplies https for you this
+   * may be enabled.
    *
    * @since 0.1.0
    */
-  accepts(serverAcceptedTypes: string[]): string | boolean {
-    return accepts(this._incomingMessage).type(serverAcceptedTypes);
+  get protocol(): 'http' | 'https' {
+    let rawProtocol: 'http' | 'https' = (<TLSSocket>this.incomingMessage.connection).encrypted ? 'https' : 'http';
+    let trustProxyConfig = this.config.trustProxy || constant(false);
+    let ip = this.incomingMessage.connection.remoteAddress;
+
+    if (trustProxyConfig) {
+      if (typeof trustProxyConfig !== 'function') {
+        trustProxyConfig = proxyaddr.compile(trustProxyConfig);
+      }
+      if (trustProxyConfig(ip, 0)) {
+        let proxyClaimedProtocol = this.getHeader('X-Forwarded-Proto') || rawProtocol;
+        return <'http' | 'https'>proxyClaimedProtocol.split(/\s*,\s*/)[0];
+      }
+    }
+    return rawProtocol;
   }
 
   /**
-   * Gets the value of a header.
+   * Check if the request was an _XMLHttpRequest_.
    *
    * @since 0.1.0
    */
-  get(header: string): string {
-    return this._incomingMessage.headers[header.toLowerCase()];
+  get xhr(): boolean{
+    let val = this.getHeader('X-Requested-With') || '';
+    return val.toLowerCase() === 'xmlhttprequest';
   }
 
   /**
-   * Checks if the request matches the supplied content types. See type-is module for details.
+   * Parse the "Host" header field to a hostname.
+   *
+   * When the "trust proxy" setting trusts the socket address, the
+   * "X-Forwarded-Host" header field will be trusted.
    *
    * @since 0.1.0
    */
-  is(...types: string[]): string | boolean {
-    return <string|boolean>typeis(this._incomingMessage, types);
+  get hostname(): string {
+    let host = this.getHeader('X-Forwarded-Host');
+    let ip = this.incomingMessage.socket.remoteAddress;
+    let trustProxyConfig = this.config.trustProxy || constant(false);
+
+    if (typeof trustProxyConfig !== 'function') {
+      trustProxyConfig = proxyaddr.compile(trustProxyConfig);
+    }
+    if (!host || !trustProxyConfig(ip, 0)) {
+      host = this.getHeader('Host');
+    }
+    if (!host) {
+      return;
+    }
+    // IPv6 literal support
+    let offset = host[0] === '[' ? host.indexOf(']') + 1 : 0;
+    let index = host.indexOf(':', offset);
+    return index !== -1 ? host.substring(0, index) : host;
   }
 
-  /*
-   * Below are methods from the IncomingMessage class, which includes the public methods
-   * of the Readable & EventEmitter interfaces as well
+  /**
+   * Return the remote address from the trusted proxy.
+   *
+   * The is the remote address on the socket unless "trust proxy" is set.
+   *
+   * @since 0.1.0
    */
 
-  /*
-   * EventEmitter methods
+  get ip(): string {
+    let trustProxyConfig = this.config.trustProxy || constant(false);
+    return proxyaddr(this.incomingMessage, trustProxyConfig);
+  }
+
+  /**
+   * When "trust proxy" is set, trusted proxy addresses + client.
+   *
+   * For example if the value were "client, proxy1, proxy2" you would receive
+   * the array `["client", "proxy1", "proxy2"]` where "proxy2" is the furthest
+   * down-stream and "proxy1" and "proxy2" were trusted.
+   *
+   * @since 0.1.0
    */
-
-  addListener(eventName: any, listener: Function): Request {
-    this._incomingMessage.addListener(eventName, listener);
-    return this;
+  get ips(): string[] {
+    let trustProxyConfig = this.config.trustProxy || constant(false);
+    let ips = proxyaddr.all(this.incomingMessage, trustProxyConfig);
+    ips.reverse().pop();
+    return ips;
   }
 
-  emit(eventName: any, ...args: any[]): boolean {
-    return this._incomingMessage.emit(eventName, ...args);
-  }
-
-  eventNames(): any[] {
-    return this._incomingMessage.eventNames();
-  }
-
-  getMaxListeners(): number {
-    return this._incomingMessage.getMaxListeners();
-  }
-
-  listenerCount(eventName: any): number {
-    return this._incomingMessage.listenerCount(eventName);
-  }
-
-  listeners(eventName: any): Function[] {
-    return this._incomingMessage.listeners(eventName);
-  }
-
-  on(eventName: any, listener: Function): Request {
-    this._incomingMessage.on(eventName, listener);
-    return this;
-  }
-
-  once(eventName: any, listener: Function): Request {
-    this._incomingMessage.once(eventName, listener);
-    return this;
-  }
-
-  prependListener(eventName: any, listener: Function): Request {
-    this._incomingMessage.prependListener(eventName, listener);
-    return this;
-  }
-
-  prependOnceListener(eventName: any, listener: Function): Request {
-    this._incomingMessage.prependOnceListener(eventName, listener);
-    return this;
-  }
-
-  removeAllListeners(eventName?: any): Request {
-    this._incomingMessage.removeAllListeners(eventName);
-    return this;
-  }
-
-  removeListener(eventName: any, listener: Function): Request {
-    this._incomingMessage.removeListener(eventName, listener);
-    return this;
-  }
-
-  setMaxListeners(n: number): Request {
-    this._incomingMessage.setMaxListeners(n);
-    return this;
-  }
-
-  /*
-   * Readable methods
+  /**
+   * Does this request have a request body?
    */
-
-  isPaused(): boolean {
-    return this._incomingMessage.isPaused();
+  get hasBody(): boolean {
+    return typeis.hasBody(this.incomingMessage);
   }
 
-  pause(): Request {
-    this._incomingMessage.pause();
-    return this;
+  constructor(incomingMessage: http.IncomingMessage | https.IncomingMessage, serverConfig?: AppConfig['server']) {
+    this.incomingMessage = incomingMessage;
+    this.config = serverConfig || {};
   }
 
-  pipe(destination: Writable, options?: Object): Writable {
-    return this._incomingMessage.pipe(destination, options);
-  }
-
-  read(size?: number): string | Buffer | null {
-    return this._incomingMessage.read(size);
-  }
-
-  resume(): Request {
-    this._incomingMessage.resume();
-    return this;
-  }
-
-  setEncoding(encoding: string): Request {
-    this._incomingMessage.setEncoding(encoding);
-    return this;
-  }
-
-  unpipe(destination?: Writable) {
-    return this._incomingMessage.unpipe(destination);
-  }
-
-  unshift(chunk: Buffer | string | any) {
-    return this._incomingMessage.unshift(chunk);
-  }
-
-  wrap(stream: Readable) {
-    return this._incomingMessage.wrap(stream);
-  }
-
-  /*
-   * IncomingMessage methods
+  /**
+   * Return request header.
+   *
+   * The `Referrer` header field is special-cased, both `Referrer` and
+   * `Referer` are interchangeable.
+   *
+   * Examples:
+   *
+   * req.get('Content-Type'); // => "text/plain"
+   *
+   * req.get('content-type'); // => "text/plain"
+   *
+   * req.get('Something'); // => undefined
+   *
+   * Aliased as `req.header()`.
+   * @since 0.1.0
    */
-
-  destroy(error: Error) {
-    return this._incomingMessage.destroy(error);
+  getHeader(name: string): string;
+  getHeader(name: 'set-cookie' | 'Set-cookie' | 'Set-Cookie'): string[];
+  getHeader(name: 'set-cookie' | 'Set-cookie' | 'Set-Cookie' | string): string | string[] {
+    return this.incomingMessage.headers[name.toLowerCase()];
   }
 
-  setTimeout(msecs: number, callback: Function): Request {
-    this._incomingMessage.setTimeout(msecs, callback);
-    return this;
+  /**
+   * Check if the given `type(s)` is acceptable, returning the best match when
+   * true, otherwise `undefined`, in which case you should respond with 406
+   * "Not Acceptable".
+   *
+   * The `type` value may be a single MIME type string such as
+   * "application/json", an extension name such as "json", a comma-delimited
+   * list such as "json, html, text/plain", an argument list such as `"json",
+   * "html", "text/plain"`, or an array `["json", "html", "text/plain"]`. When
+   * a list or array is given, the _best_ match, if any is returned.
+   *
+   * Examples:
+   *
+   *     // Accept: text/html
+   *     req.accepts('html');
+   *     // => "html"
+   *
+   *     // Accept: text/*, application/json
+   *     req.accepts('html');
+   *     // => "html"
+   *     req.accepts('text/html');
+   *     // => "text/html"
+   *     req.accepts('json, text');
+   *     // => "json"
+   *     req.accepts('application/json');
+   *     // => "application/json"
+   *
+   *     // Accept: text/*, application/json
+   *     req.accepts('image/png');
+   *     req.accepts('png');
+   *     // => undefined
+   *
+   *     // Accept: text/*;q=.5, application/json
+   *     req.accepts(['html', 'json']);
+   *     req.accepts('html', 'json');
+   *     req.accepts('html, json');
+   *     // => "json"
+   *
+   * @since 0.1.0
+   */
+  accepts(): string[];
+  accepts(...type: string[]): string[] | string | false;
+  accepts(...type: string[]): string[] | string | false {
+    let accept = accepts(this.incomingMessage);
+    return accept.types(...type);
   }
+
+  /**
+   * Check if the given `encoding`s are accepted.
+   *
+   * @since 0.1.0
+   */
+  acceptsEncodings(): string[];
+  acceptsEncodings(...encoding: string[]): string | false;
+  acceptsEncodings(...encoding: string[]): string[] | string | false {
+    let accept = accepts(this.incomingMessage);
+    return accept.encodings(...encoding);
+  }
+
+  /**
+   * Check if the given `charset`s are acceptable, otherwise you should respond
+   * with 406 "Not Acceptable".
+   *
+   * @since 0.1.0
+   */
+  acceptsCharsets(): string[];
+  acceptsCharsets(...charset: string[]): string | false;
+  acceptsCharsets(...charset: string[]): string[] | string | false {
+    let accept = accepts(this.incomingMessage);
+    return accept.charsets(...charset);
+  }
+
+  /**
+   * Check if the given `lang`s are acceptable, otherwise you should respond
+   * with 406 "Not Acceptable".
+   *
+   * @since 0.1.0
+   */
+  acceptsLanguages(): string[];
+  acceptsLanguages(...lang: string[]): string | false;
+  acceptsLanguages(...lang: string[]): string[] | string | false {
+    let accept = accepts(this.incomingMessage);
+    return accept.languages(...lang);
+  }
+
+  /**
+   * Parse Range header field, capping to the given `size`.
+   *
+   * Unspecified ranges such as "0-" require knowledge of your resource length.
+   * In the case of a byte range this is of course the total number of bytes. If
+   * the Range header field is not given `undefined` is returned, `-1` when
+   * unsatisfiable, and `-2` when syntactically invalid.
+   *
+   * When ranges are returned, the array has a "type" property which is the type
+   * of range that is required (most commonly, "bytes"). Each array element is
+   * an object with a "start" and "end" property for the portion of the range.
+   *
+   * The "combine" option can be set to `true` and overlapping & adjacent ranges
+   * will be combined into a single range.
+   *
+   * NOTE: remember that ranges are inclusive, so for example "Range: users=0-3"
+   * should respond with 4 users when available, not 3.
+   *
+   * @since 0.1.0
+   */
+  range(size: number, options?: parseRange.Options): parseRange.Result | parseRange.Ranges {
+    let range = this.getHeader('Range');
+    if (!range) {
+      return;
+    }
+    return parseRange(size, range, options);
+  }
+
+  /**
+   * Check if the incoming request contains the "Content-Type" header field,
+   * and it contains the give mime `type`.
+   *
+   * Examples:
+   *
+   *      // With Content-Type: text/html; charset=utf-8
+   *      req.is('html');
+   *      req.is('text/html');
+   *      req.is('text/*');
+   *      // => true
+   *
+   *      // When Content-Type is application/json
+   *      req.is('json');
+   *      req.is('application/json');
+   *      req.is('application/*');
+   *      // => true
+   *
+   *      req.is('html');
+   *      // => false
+   *
+   * @since 0.1.0
+   */
+  is(...types: string[]): string | false {
+    if (Array.isArray(types[0])) {
+      types = <any>types[0];
+    }
+    return typeis(this.incomingMessage, types);
+  }
+
 }

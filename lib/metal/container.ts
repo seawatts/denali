@@ -10,6 +10,7 @@ import Resolver from './resolver';
 import { Dict, Constructor } from '../utils/types';
 import DenaliObject from './object';
 import { injectInstance } from './inject';
+import * as dedent from 'dedent-js';
 
 const DEFAULT_OPTIONS = {
   instantiate: false,
@@ -90,34 +91,34 @@ export default class Container {
   /**
    * Manual registrations that should override resolver retrieved values
    */
-  private registry: Dict<Constructor<any>> = {};
+  protected registry: Dict<Constructor<any>> = {};
 
   /**
    * An array of resolvers used to retrieve container members. Resolvers are tried in order, first
    * to find the member wins. Normally, each addon will supply it's own resolver, allowing for
    * addon order and precedence when looking up container entries.
    */
-  private resolvers: Resolver[] = [];
+  protected resolvers: Resolver[] = [];
 
   /**
    * Internal cache of lookup values
    */
-  private lookups: Dict<{ factory: Factory<any>, instance: any }> = {};
+  protected lookups: Dict<{ factory: Factory<any>, instance: any }> = {};
 
   /**
    * Internal cache of classes
    */
-  private classLookups: Dict<Constructor<any>> = {};
+  protected classLookups: Dict<Constructor<any>> = {};
 
   /**
    * Internal cache of factories
    */
-  private factoryLookups: Dict<Factory<any>> = {};
+  protected factoryLookups: Dict<Factory<any>> = {};
 
   /**
    * Options for container entries. Keyed on specifier or type. See ContainerOptions.
    */
-  private options: Dict<ContainerOptions> = {
+  protected options: Dict<ContainerOptions> = {
     app: { singleton: true, instantiate: true },
     action: { singleton: false, instantiate: true },
     config: { singleton: true, instantiate: false },
@@ -133,7 +134,7 @@ export default class Container {
   /**
    * Internal metadata store. See `metaFor()`
    */
-  private meta: Map<any, Dict<any>> = new Map();
+  protected meta: Map<any, Dict<any>> = new Map();
 
   /**
    * Create a new container with a base (highest precedence) resolver at the given directory.
@@ -194,7 +195,18 @@ export default class Container {
         if (options.loose) {
           return;
         }
-        throw new Error(`No class found for ${ specifier }`);
+        console.error(dedent`
+          \n\nUnable to find factory source for ${ specifier }.
+
+          Available registrations:
+            - ${ Object.keys(this.registry).join('\n  - ') }
+
+          Available resolvers:
+            - ${ this.resolvers.map((r) => r.root).join('\n  - ') }
+
+          Run with DEBUG=silly-denali:resolver:<path> to trace a specific resolver's resolution
+        `);
+        throw new Error(`No class found for ${ specifier }.`);
       }
 
       factory = this.factoryLookups[specifier] = this.buildFactory(specifier, klass);
@@ -336,13 +348,13 @@ export default class Container {
   /**
    * Build the factory wrapper for a given container member
    */
-  private buildFactory<T extends DenaliObject>(specifier: string, klass: Constructor<T>): Factory<T> {
+  protected buildFactory<T extends DenaliObject>(specifier: string, klass: Constructor<T>): Factory<T> {
     let container = this;
     return {
       class: klass,
       create(...args: any[]) {
         assert(typeof klass === 'function', `Unable to instantiate ${ specifier } (it's not a constructor). Try setting the 'instantiate: false' option on this container entry to avoid instantiating it`);
-        let instance = <T>new klass();
+        let instance = <T>new klass(container);
         injectInstance(instance, container);
         if (typeof instance.init === 'function') {
           instance.init(...args);

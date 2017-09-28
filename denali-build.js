@@ -1,6 +1,10 @@
 const path = require('path');
+const chalk = require('chalk');
 const { Builder, ui } = require(`denali-cli`);
 const { exec } = require('child_process');
+const Funnel = require('broccoli-funnel');
+const MergeTree = require('broccoli-merge-trees');
+const { typescript: Typescript } = require('broccoli-typescript-compiler');
 
 module.exports = class DenaliBuilder extends Builder {
 
@@ -10,38 +14,21 @@ module.exports = class DenaliBuilder extends Builder {
   }
 
   transpileTree(tree, dir) {
-    const Funnel = require('broccoli-funnel');
-    const MergeTree = require('broccoli-merge-trees');
-    const Plugin = require('broccoli-plugin');
-    class TypescriptTree extends Plugin {
-      constructor(tree, options) {
-        return super([tree], options);
-      }
-      build() {
-        return new Promise((resolve, reject) => {
-          exec(path.join(dir, 'node_modules/.bin/tsc') + ' --outDir ' + this.outputPath, {
-            cwd: dir,
-            stdio: 'inherit'
-          }, (err, stdout, stderr) => {
-            if (err) {
-              if (stdout.match(/error TS\d+/)) {
-                ui.warn(`\n===> ${ stdout.split('\n').length } Typescript Errors:`);
-                ui.warn(stdout.replace(/^\.\.\/\.\.\//mg, ''));
-              } else {
-                return reject(err);
-              }
-            }
-            resolve();
-          });
-        });
-      }
-    }
     let tsconfig = require(path.join(dir, 'tsconfig.json'));
-    let transpiled = new TypescriptTree(tree, { tsconfig });
+    tsconfig.baseUrl = __dirname;
+    let transpiledTS = new Typescript(tree, {
+      tsconfig, 
+      workingPath: __dirname,
+      annotation: 'compile typescript'
+    });
+    transpiledTS.setDiagnosticWriter((message) => {
+      ui.warn(chalk.bold(`==> [denali] Typescript compilation errors: `));
+      ui.warn(message);
+    });
     let withoutTS = new Funnel(tree, {
       exclude: [ '**/*.ts' ]
     });
-    return new MergeTree([ withoutTS, transpiled ], { overwrite: true, annotation: 'merge typescript outptu' });
+    return new MergeTree([ withoutTS, transpiledTS ], { overwrite: true, annotation: 'merge typescript output' });
   }
 
 };

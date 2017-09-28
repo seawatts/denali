@@ -1,10 +1,9 @@
-import * as path from 'path';
 import * as Bluebird from 'bluebird';
 import { spinner, Command, unwrap } from 'denali-cli';
 import { exec, ExecOptions } from 'child_process';
 import { sync as readPkg } from 'read-pkg';
 
-const run = Bluebird.promisify<[ string, string ], string, ExecOptions>(exec);
+const run = Bluebird.promisify<string, string, ExecOptions>(exec);
 
 /**
  * Publish an addon to the npm registry.
@@ -63,7 +62,7 @@ export default class PublishCommand extends Command {
   protected async publish() {
     await spinner.start('Publishing');
     try {
-      await run('npm publish', { cwd: path.join(process.cwd(), 'dist') });
+      await run('npm publish', {});
     } catch (error) {
       await spinner.fail('Publish failed');
       throw error;

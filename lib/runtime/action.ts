@@ -17,11 +17,11 @@ import Request from './request';
 import Errors from './errors';
 import View from '../render/view';
 import { ServerResponse } from 'http';
-import { Dict } from '../utils/types';
 import inject from '../metal/inject';
 import Serializer from '../render/serializer';
 import DatabaseService from '../data/database';
 import Logger from './logger';
+import ConfigService from './config';
 import { RelationshipConfigs } from '../render/serializer';
 
 const debug = createDebug('denali:action');
@@ -44,9 +44,9 @@ export interface Responder {
  */
 export interface ResponderParams {
   body?: any;
-  query?: Dict<string>;
-  headers?: Dict<string>;
-  params?: Dict<string>;
+  query?: any;
+  headers?: any;
+  params?: any;
   [key: string]: any;
 }
 
@@ -131,7 +131,7 @@ export default abstract class Action extends DenaliObject {
   /**
    * Application config
    */
-  config = inject<any>('config:environment');
+  config = inject<ConfigService>('service:config');
 
   /**
    * Force which parser should be used for parsing the incoming request.
@@ -174,7 +174,7 @@ export default abstract class Action extends DenaliObject {
   /**
    * Track whether or not we have rendered yet
    */
-  private hasRendered = false;
+  protected hasRendered = false;
 
   /**
    * The path to this action, i.e. 'users/create'
@@ -255,7 +255,7 @@ export default abstract class Action extends DenaliObject {
     // Parse the incoming request based on the action's chosen parser
     debug(`[${ request.id }]: parsing request`);
     assert(typeof this.parser.parse === 'function', 'The parser you supply must define a `parse(request)` method. See the parser docs for details');
-    let parsedRequest: ResponderParams = this.parser.parse(request);
+    let parsedRequest = await this.parser.parse(request);
 
     // Build the before and after filter chains
     let { beforeChain, afterChain } = this._buildFilterChains();
@@ -303,7 +303,7 @@ export default abstract class Action extends DenaliObject {
   /**
    * Invokes the filters in the supplied chain in sequence.
    */
-  private async _invokeFilters(chain: string[], parsedRequest: ResponderParams): Promise<any> {
+  protected async _invokeFilters(chain: string[], parsedRequest: ResponderParams): Promise<any> {
     chain = clone(chain);
     while (chain.length > 0) {
       let filterName = chain.shift();
@@ -331,7 +331,7 @@ export default abstract class Action extends DenaliObject {
    *
    * Throws if it encounters the name of a filter method that doesn't exist.
    */
-  private _buildFilterChains(): { beforeChain: string[], afterChain: string[] } {
+  protected _buildFilterChains(): { beforeChain: string[], afterChain: string[] } {
     let meta = this.container.metaFor(this.constructor);
     if (!meta.beforeFiltersCache) {
       let prototypeChain: Action[] = [];
