@@ -2457,9 +2457,9 @@ delegates@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/delegates/-/delegates-1.0.0.tgz#84c6e159b81904fdca59a0ef44cd870d31250f9a"
 
-denali-cli@0.0.x:
+denali-cli@seawatts/denali-cli#master:
   version "0.0.16"
-  resolved "https://registry.yarnpkg.com/denali-cli/-/denali-cli-0.0.16.tgz#1620d1055abd7b22641ef3926974276698795038"
+  resolved "https://codeload.github.com/seawatts/denali-cli/tar.gz/f48d3447e80ecfd5d4cb3473625f766c88d92f95"
   dependencies:
     "@types/bluebird" "^3.5.8"
     "@types/debug" "^0.0.30"
