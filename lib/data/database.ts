@@ -36,8 +36,9 @@ export default class DatabaseService extends Service {
   async query(modelType: string, query: any, options?: any): Promise<Model[]> {
     assert(query != null, `You must pass a query to Model.query(conditions)`);
     let adapter = this.lookupAdapter(modelType);
+    debug(`${ modelType } query: ${ util.inspect(query) }`);
     let result = await adapter.query(modelType, query, options);
-    debug(`${ modelType } query: found ${result.length} records: ${ util.inspect(query) }`);
+    debug(`${ modelType } query found ${result.length} records`);
     let ModelFactory = this.container.factoryFor<Model>(`model:${ modelType }`);
     return result.map((record) => {
       return ModelFactory.create(record);
