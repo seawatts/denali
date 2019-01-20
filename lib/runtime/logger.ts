@@ -121,6 +121,9 @@ export default class Logger extends DenaliObject {
     
     /* tslint:enable:no-console no-debugger*/
     console.log(parts.join(' '));
+    if (level === 'error') {	
+      debugger;	
+    }
     /* tslint:disable:no-console no-debugger */
   }
 
