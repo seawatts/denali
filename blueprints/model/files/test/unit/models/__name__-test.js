@@ -1,3 +1,6 @@
-import test from 'ava';
+import { setupUnitTest } from '@denali-js/core';
+import <%= className %> from '../models/<%= dasherized %>';
 
-test.todo('<%= className %>Model');
+const test = setupUnitTest();
+
+test.todo('<%= className %>');

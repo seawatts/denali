@@ -1,8 +1,9 @@
 import {
   upperFirst,
-  camelCase
+  camelCase,
+  kebabCase
 } from 'lodash';
-import { Blueprint, unwrap } from 'denali-cli';
+import { Blueprint, unwrap } from '@denali-js/cli';
 
 /**
  * Generates a blank model
@@ -28,7 +29,8 @@ export default class ModelBlueprint extends Blueprint {
     let name = argv.name;
     return {
       name,
-      className: upperFirst(camelCase(name))
+      className: upperFirst(camelCase(name)),
+      dasherized: kebabCase(name)
     };
   }
 

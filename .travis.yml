@@ -1,18 +1,13 @@
 ---
 language: node_js
 node_js:
-  - "7"
+  - "7.6"
   - "8"
 before_script:
   - git config --global user.email "davewasmer@gmail.com"
   - git config --global user.name "Dave Wasmer"
 after_success:
   - npm run coverage
-jobs:
-  include:
-    - stage: build & deploy docs
-      node_js: "7"
-      script: npm run deploy-docs
 sudo: false
 cache:
   directories:

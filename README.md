@@ -1,11 +1,10 @@
 # Denali
 
-[![NPM version][npm-image]][npm-url]
-[![Build Status][travis-image]][travis-url]
-[![Coverage][coverage-image]][coverage-url]
-[![Dependency Status][depstat-image]][depstat-url]
-[![Downloads][download-image]][npm-url]
-[![Standard Version][sv-image]][sv-url]
+[![CircleCI](https://img.shields.io/circleci/project/github/denali-js/core.svg?style=flat-square)](https://circleci.com/gh/denali-js/core)
+[![Coverage](https://img.shields.io/codeclimate/coverage/github/denali-js/core.svg?style=flat-square)](https://codeclimate.com/github/denali-js/core)
+[![Dependencies](https://img.shields.io/david/denali-js/core.svg?style=flat-square)](https://david-dm.org/denali-js/core)
+[![npm downloads](https://img.shields.io/npm/dm/@denali-js/core.svg?style=flat-square)](https://www.npmjs.com/package/@denali-js/core)
+![latest version](https://img.shields.io/npm/v/@denali-js/core.svg?style=flat-square)
 
 > An opinionated Node framework for building robust JSON APIs
 
@@ -50,7 +49,7 @@ But rather than a single controller class that responds to many different
 endpoints, an Action class is responsible for responding to requests against
 a single endpoint (URL + method) only. The result is powerful - since the Action
 class directly and completely represents the app's response handler, we can use
-expressive declarative syntax to succicently define behaviors.
+expressive declarative syntax to succinctly define behaviors.
 
 ## Getting Started
 
@@ -79,24 +78,3 @@ To learn more, check out [the docs](http://denalijs.org/) or join us on [Slack](
 ## License
 
 MIT © [Dave Wasmer](http://davewasmer.com)
-
-
-[npm-url]: https://npmjs.org/package/denali
-[npm-image]: https://img.shields.io/npm/v/denali.svg?style=flat-square
-
-[travis-url]: https://travis-ci.org/denali-js/denali
-[travis-image]: https://img.shields.io/travis/denali-js/denali/master.svg?style=flat-square
-
-[coverage-url]: https://codeclimate.com/github/denali-js/denali
-[coverage-image]: https://img.shields.io/codeclimate/coverage/github/denali-js/denali.svg?style=flat-square
-
-[depstat-url]: https://david-dm.org/denali-js/denali
-[depstat-image]: https://david-dm.org/denali-js/denali/status.svg?style=flat-square
-
-[download-image]: https://img.shields.io/npm/dm/denali.svg?style=flat-square
-
-[sv-url]: https://github.com/conventional-changelog/standard-version
-[sv-image]: https://img.shields.io/badge/release-standard%20version-brightgreen.svg?style=flat-square
-
-[greenkeeper-image]: https://badges.greenkeeper.io/denali-js/denali.svg
-[greenkeeper-url]: https://greenkeeper.io

@@ -2,6 +2,169 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.1.2"></a>
+## [0.1.2](https://github.com/denali-js/core/compare/v0.1.1...v0.1.2) (2018-02-28)
+
+
+### Bug Fixes
+
+* fix resolver ordering, add test ([b4ae232](https://github.com/denali-js/core/commit/b4ae232))
+
+
+
+<a name="0.1.1"></a>
+## [0.1.1](https://github.com/denali-js/core/compare/v0.1.0...v0.1.1) (2018-02-22)
+
+
+
+<a name="0.1.0"></a>
+# [0.1.0](https://github.com/denali-js/core/compare/v0.0.46...v0.1.0) (2018-02-22)
+
+
+
+<a name="0.0.46"></a>
+## [0.0.46](https://github.com/denali-js/denali/compare/v0.0.45...v0.0.46) (2018-02-15)
+
+
+### Bug Fixes
+
+* bump deps, fix tests ([14d2dfd](https://github.com/denali-js/denali/commit/14d2dfd))
+
+
+
+<a name="0.0.45"></a>
+## [0.0.45](https://github.com/denali-js/denali/compare/v0.0.44...v0.0.45) (2018-02-15)
+
+
+### Bug Fixes
+
+* **blueprints:** fix relationships config typo ([fa54cd3](https://github.com/denali-js/denali/commit/fa54cd3))
+* **commands:** use --inspect-brk for debugging servers ([8f7d167](https://github.com/denali-js/denali/commit/8f7d167))
+* only sideload records if strategy is embed ([c048471](https://github.com/denali-js/denali/commit/c048471))
+
+
+### Features
+
+* remove index signature from Model ([c95a60a](https://github.com/denali-js/denali/commit/c95a60a))
+
+
+
+<a name="0.0.44"></a>
+## [0.0.44](https://github.com/denali-js/denali/compare/v0.0.43...v0.0.44) (2018-02-11)
+
+
+
+<a name="0.0.43"></a>
+## [0.0.43](https://github.com/denali-js/denali/compare/v0.0.42...v0.0.43) (2018-02-10)
+
+
+
+<a name="0.0.9"></a>
+## [0.0.9](https://github.com/denali-js/denali/compare/v0.0.42...v0.0.9) (2018-02-10)
+
+
+
+<a name="0.0.42"></a>
+## [0.0.42](https://github.com/denali-js/denali/compare/v0.0.41...v0.0.42) (2018-02-10)
+
+
+
+<a name="0.0.41"></a>
+## [0.0.41](https://github.com/denali-js/denali/compare/v0.0.40...v0.0.41) (2018-02-10)
+
+
+### Bug Fixes
+
+* add files config to package json to ensure correct files are published ([3fc1fe5](https://github.com/denali-js/denali/commit/3fc1fe5))
+* add logic to support dummy app server cmd ([d614d8a](https://github.com/denali-js/denali/commit/d614d8a))
+* do not fallback for views ([26c2082](https://github.com/denali-js/denali/commit/26c2082))
+* don't assume variadic args will be an array, remove unused types dep ([a5a4c5b](https://github.com/denali-js/denali/commit/a5a4c5b))
+* drop html extension from error view ([73f76e2](https://github.com/denali-js/denali/commit/73f76e2))
+* enforce header types via node type def import ([b4946ac](https://github.com/denali-js/denali/commit/b4946ac))
+* ensure server command exits properly on SIGINT ([54f5ab1](https://github.com/denali-js/denali/commit/54f5ab1))
+* export AcceptanceTestContext type ([3af961e](https://github.com/denali-js/denali/commit/3af961e))
+* finish change to pull fields from Model.schema ([67a56a9](https://github.com/denali-js/denali/commit/67a56a9))
+* fix clean exits from test command ([21d4177](https://github.com/denali-js/denali/commit/21d4177))
+* fix dummy bundle load path, upgrade find-plugins ([63764b6](https://github.com/denali-js/denali/commit/63764b6))
+* fix main path, remove unused find-plugins dep, float denali-cli on patch version ([d655b13](https://github.com/denali-js/denali/commit/d655b13))
+* fix migrations path ([3ebe062](https://github.com/denali-js/denali/commit/3ebe062))
+* fix naming variable references in blueprints ([e05ec24](https://github.com/denali-js/denali/commit/e05ec24))
+* fix some blueprint issues, add missing initializer blueprint ([a4e4bdc](https://github.com/denali-js/denali/commit/a4e4bdc))
+* fix type issues exposed after typescript & lodash type upgrade ([a98fa76](https://github.com/denali-js/denali/commit/a98fa76))
+* fix types and config accessors in migrate command ([1c507ed](https://github.com/denali-js/denali/commit/1c507ed))
+* fix unit test .subject() typing ([ac2f390](https://github.com/denali-js/denali/commit/ac2f390))
+* fix uses of old schema definitions in tests & serializers ([a168a99](https://github.com/denali-js/denali/commit/a168a99))
+* improve typing ([6ad7d09](https://github.com/denali-js/denali/commit/6ad7d09))
+* remove add/removeRoute calls from blueprints, since it was removed ([6ba45d9](https://github.com/denali-js/denali/commit/6ba45d9))
+* run initializers in reverse natural order to ensure naturally later addons are run later ([b6ec5c2](https://github.com/denali-js/denali/commit/b6ec5c2))
+* update resource blueprint ([66396e2](https://github.com/denali-js/denali/commit/66396e2))
+* **blueprints:** update blueprints to use new unit test syntax ([591d09e](https://github.com/denali-js/denali/commit/591d09e))
+
+
+### Features
+
+* Add support for docs build flags ([9aba6ea](https://github.com/denali-js/denali/commit/9aba6ea))
+* ensure publish command runs under prod env ([670f66e](https://github.com/denali-js/denali/commit/670f66e))
+
+
+
+<a name="0.0.40"></a>
+## [0.0.40](https://github.com/denali-js/denali/compare/v0.0.39...v0.0.40) (2018-01-31)
+
+
+### Bug Fixes
+
+* **blueprints:** acceptance test setup ([#421](https://github.com/denali-js/denali/issues/421)) ([bc734ec](https://github.com/denali-js/denali/commit/bc734ec))
+* remove debug code, simplify package.json scripts ([40d15b8](https://github.com/denali-js/denali/commit/40d15b8))
+
+
+### Features
+
+* bundled builds ([#423](https://github.com/denali-js/denali/issues/423)) ([2e2c852](https://github.com/denali-js/denali/commit/2e2c852))
+* set min Node version to 7.6 for async/await support ([f583306](https://github.com/denali-js/denali/commit/f583306))
+
+
+
+<a name="0.0.39"></a>
+## [0.0.39](https://github.com/denali-js/denali/compare/v0.0.38...v0.0.39) (2017-10-13)
+
+
+
+<a name="0.0.38"></a>
+## [0.0.38](https://github.com/denali-js/denali/compare/v0.0.37...v0.0.38) (2017-10-09)
+
+
+### Bug Fixes
+
+* fix escaping issue with error template ([#401](https://github.com/denali-js/denali/issues/401)) ([e527182](https://github.com/denali-js/denali/commit/e527182))
+
+
+
+<a name="0.0.37"></a>
+## [0.0.37](https://github.com/denali-js/denali/compare/v0.0.36...v0.0.37) (2017-10-02)
+
+
+
+<a name="0.0.36"></a>
+## [0.0.36](https://github.com/denali-js/denali/compare/v0.0.35...v0.0.36) (2017-10-02)
+
+
+
+<a name="0.0.35"></a>
+## [0.0.35](https://github.com/denali-js/denali/compare/v0.0.34...v0.0.35) (2017-10-01)
+
+
+
+<a name="0.0.34"></a>
+## [0.0.34](https://github.com/denali-js/denali/compare/v0.0.33...v0.0.34) (2017-10-01)
+
+
+### Bug Fixes
+
+* **runtime:** make fixed route params argument on route-defining methods optional ([#394](https://github.com/denali-js/denali/issues/394)) ([f26039a](https://github.com/denali-js/denali/commit/f26039a))
+
+
+
 <a name="0.0.33"></a>
 ## [0.0.33](https://github.com/denali-js/denali/compare/v0.0.32...v0.0.33) (2017-09-19)
 

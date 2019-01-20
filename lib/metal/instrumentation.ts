@@ -2,13 +2,14 @@ import * as EventEmitter from 'events';
 import { merge } from 'lodash';
 
 /**
- * The Instrumentation class is a low level class for instrumenting your app's code. It allows you
- * to listen to framework level profiling events, as well as creating and firing your own such
- * events.
+ * The Instrumentation class is a low level class for instrumenting your app's
+ * code. It allows you to listen to framework level profiling events, as well
+ * as creating and firing your own such events.
  *
- * For example, if you wanted to instrument how long a particular action was taking:
+ * For example, if you wanted to instrument how long a particular action was
+ * taking:
  *
- *     import { Instrumentation, Action } from 'denali';
+ *     import { Instrumentation, Action } from '@denali-js/core';
  *     export default class MyAction extends Action {
  *       respond() {
  *         let Post = this.modelFor('post');

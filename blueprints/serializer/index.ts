@@ -1,8 +1,9 @@
 import {
   upperFirst,
-  camelCase
+  camelCase,
+  kebabCase
 } from 'lodash';
-import { Blueprint, unwrap } from 'denali-cli';
+import { Blueprint, unwrap } from '@denali-js/cli';
 
 /**
  * Generates a blank serializer
@@ -26,9 +27,8 @@ export default class SerializerBlueprint extends Blueprint {
 
   locals(argv: any) {
     let name = argv.name;
-    return {
-      name,
-      className: upperFirst(camelCase(name))
-    };
+    let className = upperFirst(camelCase(name));
+    let dasherized = kebabCase(name);
+    return { name, className, dasherized };
   }
 }

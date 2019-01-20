@@ -5,7 +5,7 @@ import {
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { spawn, ChildProcess } from 'child_process';
-import { ui, Command, Project, unwrap } from 'denali-cli';
+import { ui, Command, Project, unwrap } from '@denali-js/cli';
 import * as createDebug from 'debug';
 
 const debug = createDebug('denali:commands:server');
@@ -42,7 +42,12 @@ export default class ServerCommand extends Command {
       type: <any>'string'
     },
     debug: {
-      description: 'Run in debug mode (add the --debug flag to node, launch node-inspector)',
+      description: 'Run in debug mode (add the --inspect flag to node)',
+      default: false,
+      type: <any>'boolean'
+    },
+    debugBrk: {
+      description: 'Run in debug mode (add the --inspect-brk flag to node)',
       default: false,
       type: <any>'boolean'
     },
@@ -60,8 +65,8 @@ export default class ServerCommand extends Command {
       default: false,
       type: <any>'boolean'
     },
-    skipLint: {
-      description: 'Skip linting the app source files',
+    docs: {
+      description: 'Build the documentation as well?',
       default: false,
       type: <any>'boolean'
     },
@@ -97,62 +102,68 @@ export default class ServerCommand extends Command {
     }
     argv.watch = argv.watch || argv.environment === 'development';
 
+    let project = new Project({
+      environment: argv.environment,
+      docs: argv.docs,
+      printSlowTrees: argv.printSlowTrees
+    });
+
     if (argv.skipBuild) {
-      this.startServer(argv);
+      this.startServer(argv, project);
       return;
     }
 
-    let project = new Project({
-      environment: argv.environment,
-      printSlowTrees: argv.printSlowTrees,
-      audit: !argv.skipAudit,
-      lint: !argv.skipLint,
-      buildDummy: true
-    });
-
     process.on('exit', this.cleanExit.bind(this));
-    process.on('SIGINT', this.cleanExit.bind(this));
-    process.on('SIGTERM', this.cleanExit.bind(this));
+    process.on('SIGINT', this.cleanExit.bind(this, true));
+    process.on('SIGTERM', this.cleanExit.bind(this, true));
+
+    let outputDir = project.isAddon ? path.join('tmp', '-dummy') : 'dist';
 
     if (argv.watch) {
       debug('starting watcher');
-      project.watch({
-        outputDir: argv.output,
-        onBuild: () => {
+      let watch: typeof project.watch = project.isAddon ? project.watchDummy.bind(project) : project.watch.bind(project);
+      watch({
+        destDir: outputDir,
+        afterBuild: () => {
           if (this.server) {
             debug('killing existing server');
             this.server.removeAllListeners('exit');
             this.server.kill();
           }
-          this.startServer(argv);
+          this.startServer(argv, project);
         }
       });
     } else {
       debug('building project');
-      await project.build(argv.output);
-      this.startServer(argv);
+      project.isAddon ? await project.buildDummy(outputDir) : await project.build(outputDir);
+      this.startServer(argv, project);
     }
   }
 
-  protected cleanExit() {
+  protected cleanExit(resumeExit: boolean) {
     if (this.server) {
       this.server.kill();
     }
+    if (resumeExit) {
+      process.exit();
+    }
   }
 
-  protected startServer(argv: any) {
-    let dir = argv.output;
-    let args = [ 'app/index.js' ];
-    if (argv.debug) {
-      args.unshift('--inspect', '--debug-brk');
+  protected startServer(argv: any, project: Project) {
+    let bootstrapPath = project.isAddon ? path.join('test/dummy/index.js') : 'index.js';
+    let args = [ bootstrapPath ];
+    if (argv.debugBrk) {
+      args.unshift('--inspect-brk');
     }
-    if (!fs.existsSync(path.join(dir, 'app', 'index.js'))) {
-      ui.error('Unable to start your application: missing app/index.js file');
-      return;
+    if(argv.debug) {
+      args.unshift('--inspect');
+    }
+    
+    if (!fs.existsSync(bootstrapPath)) {
+      throw new Error(`Unable to start your application: missing ${ bootstrapPath } file`);
     }
     debug(`starting server process: ${ process.execPath } ${ args.join(' ') }`);
     this.server = spawn(process.execPath, args, {
-      cwd: dir,
       stdio: [ 'pipe', process.stdout, process.stderr ],
       env: merge(clone(process.env), {
         PORT: argv.port,

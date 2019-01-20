@@ -4,7 +4,7 @@
       "declaration": true,
       "module": "commonjs",
       "moduleResolution": "node",
-      "target": "ES2016",
+      "target": "ES2017",
       "noImplicitAny": true,
       "sourceMap": false,
       "importHelpers": true,
@@ -16,7 +16,7 @@
       "noUnusedLocals": true,
       "baseUrl": ".",
       "paths": {
-        "denali": [ "lib/index.ts" ]
+        "@denali-js/core": [ "lib/index.ts" ]
       }
   },
   "include": [

@@ -1,8 +1,9 @@
 import {
   upperFirst,
-  camelCase
+  camelCase,
+  kebabCase
 } from 'lodash';
-import { Blueprint, unwrap } from 'denali-cli';
+import { Blueprint, unwrap } from '@denali-js/cli';
 
 /**
  * Generate an new action class + tests.
@@ -48,19 +49,8 @@ export default class ActionBlueprint extends Blueprint {
     return {
       name,
       className: upperFirst(camelCase(name)),
+      dasherized: kebabCase(name),
       nesting
     };
-  }
-
-  async postInstall(argv: any): Promise<void> {
-    let name = argv.name;
-    let method = argv.method || 'post';
-    this.addRoute(method.toLowerCase(), `/${ name }`, name);
-  }
-
-  async postUninstall(argv: any): Promise<void> {
-    let name = argv.name;
-    let method = argv.method || 'post';
-    this.removeRoute(method.toLowerCase(), `/${ name }`, name);
   }
 }

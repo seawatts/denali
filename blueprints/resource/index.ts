@@ -5,7 +5,7 @@ import {
   kebabCase
 } from 'lodash';
 import { singularize, pluralize } from 'inflection';
-import { Blueprint, unwrap } from 'denali-cli';
+import { Blueprint, unwrap } from '@denali-js/cli';
 
 /**
  * Generates a model, serializer, CRUD actions, and tests for a resource
@@ -46,14 +46,6 @@ export default class ResourceBlueprint extends Blueprint {
       humanized: lowerCase(name)
     };
     return { plural, singular };
-  }
-
-  async postInstall(argv: any) {
-    this.addRoute('resource', singularize(argv.name));
-  }
-
-  async postUninstall(argv: any) {
-    this.removeRoute('resource', singularize(argv.name));
   }
 
 }

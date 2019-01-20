@@ -11,8 +11,8 @@ import ConfigService from './config';
 export type LogLevel = 'info' | 'warn' | 'error';
 
 /**
- * A simple Logger class that adds timestamps and supports multiple levels of logging, colorized
- * output, and control over verbosity.
+ * A simple Logger class that adds timestamps and supports multiple levels of
+ * logging, colorized output, and control over verbosity.
  *
  * @package runtime
  * @since 0.1.0
@@ -33,6 +33,13 @@ export default class Logger extends DenaliObject {
    * @since 0.1.0
    */
   colorize = true;
+
+  /**
+   * Specify if logs should be colorized.
+   *
+   * @since 0.1.3
+   */
+  timestamps = true;
 
   /**
    * Available log levels that can be used.
@@ -87,16 +94,6 @@ export default class Logger extends DenaliObject {
       level = this.loglevel;
     }
 
-    let timestamp;
-
-    if (this.config.environment !== 'production') {
-      // Prints Local time in ISO8601 format with fractional seconds.
-      timestamp = moment().format('YYYY-MM-DDTHH:mm:ss.SSSZ');
-    } else {
-      // Prints UTC timestamp
-      timestamp = moment().toISOString();
-    }
-
     let padLength = this.levels.reduce((n: number, label) => Math.max(n, label.length), null);
     let levelLabel = padStart(level.toUpperCase(), padLength);
     if (this.colorize) {
@@ -104,9 +101,27 @@ export default class Logger extends DenaliObject {
       msg = colorizer(msg);
       levelLabel = colorizer(levelLabel);
     }
-    /* tslint:disable:no-console */
-    console.log(`[${timestamp}] ${levelLabel} - ${msg}`);
-    /* tslint:enable:no-console */
+
+    let parts: string[] = [];
+    if (this.timestamps) {
+      let timestamp;
+
+      if (this.config.environment !== 'production') {
+        // Prints Local time in ISO8601 format with fractional seconds.
+        timestamp = moment().format('YYYY-MM-DDTHH:mm:ss.SSSZ');
+      } else {
+        // Prints UTC timestamp
+        timestamp = moment().toISOString();
+      }
+      
+      parts.push(`[${ timestamp }]`);
+    }
+    parts.push(levelLabel);
+    parts.push(msg);
+    
+    /* tslint:enable:no-console no-debugger*/
+    console.log(parts.join(' '));
+    /* tslint:disable:no-console no-debugger */
   }
 
 }

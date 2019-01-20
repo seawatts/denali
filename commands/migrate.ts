@@ -1,10 +1,11 @@
 import * as assert from 'assert';
 import * as path from 'path';
-import { spinner, Command, Project, unwrap } from 'denali-cli';
+import { spinner, Command, Project, unwrap } from '@denali-js/cli';
 import * as tryRequire from 'try-require';
 import * as cmdExists from 'command-exists';
 import * as Bluebird from 'bluebird';
 import { exec } from 'child_process';
+import Application from '../lib/runtime/application';
 
 const run = Bluebird.promisify<string, string>(exec);
 const commandExists = Bluebird.promisify<boolean, string>(cmdExists);
@@ -57,13 +58,12 @@ export default class MigrateCommand extends Command {
       await spinner.succeed('Knex installed');
     }
     let project = new Project({
-      environment: argv.environment,
-      buildDummy: true
+      environment: argv.environment
     });
-    let application = await project.createApplication();
-    assert(application.config.migrations && application.config.migrations.db, 'DB connection info is missing. You must supply the knex connection info in config.migrations.db.');
-    let db = knex(application.config.migrations.db);
-    let migrationsDir = path.join(application.dir, 'config', 'migrations');
+    let application: Application = await project.createApplication();
+    assert(application.config.get('migrations', 'db'), 'DB connection info is missing. You must supply the knex connection info in config.migrations.db.');
+    let db = knex(application.config.get('migrations', 'db'));
+    let migrationsDir = path.join(process.cwd(), 'dist', 'config', 'migrations');
     try {
       if (argv.rollback) {
         await spinner.start('Rolling back last migration');

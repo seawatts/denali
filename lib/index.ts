@@ -1,5 +1,3 @@
-import 'main-dir';
-
 /**
  *
  * This is the main module exported by Denali when it is loaded via
@@ -24,7 +22,6 @@ import {
 import Model from './data/model';
 import ORMAdapter from './data/orm-adapter';
 import MemoryAdapter from './data/memory';
-import DatabaseService from './data/database';
 
 // Render
 import Serializer from './render/serializer';
@@ -44,10 +41,9 @@ import mixin, {
   MixinFactory,
   MixinApplicator
 } from './metal/mixin';
-import eachPrototype from './metal/each-prototype';
-import Container from './metal/container';
+import container, { lookup, Container } from './metal/container';
 import Resolver from './metal/resolver';
-import inject from './metal/inject';
+import DenaliObject from './metal/object';
 
 // Runtime
 import Action, {
@@ -64,9 +60,11 @@ import Service from './runtime/service';
 import ConfigService from './runtime/config';
 
 // Test
-import appAcceptanceTest, { AppAcceptance } from './test/app-acceptance';
+import setupAcceptanceTest, { AcceptanceTest, AcceptanceTestContext } from './test/acceptance-test';
+import setupUnitTest, { UnitTest } from './test/unit-test';
 import MockRequest from './test/mock-request';
 import MockResponse from './test/mock-response';
+
 
 export {
   // Data
@@ -80,7 +78,6 @@ export {
   Model,
   ORMAdapter,
   MemoryAdapter,
-  DatabaseService,
 
   // Render
   View,
@@ -99,10 +96,11 @@ export {
   createMixin,
   MixinFactory,
   MixinApplicator,
-  eachPrototype,
   Container,
+  container,
+  lookup,
   Resolver,
-  inject,
+  DenaliObject,
 
   // Runtime
   Action,
@@ -118,8 +116,12 @@ export {
   ConfigService,
 
   // Test
-  AppAcceptance,
-  appAcceptanceTest,
+  setupAcceptanceTest,
+  AcceptanceTest,
+  AcceptanceTestContext,
+  setupUnitTest,
+  UnitTest,
   MockRequest,
   MockResponse
+
 };

@@ -1,5 +1,5 @@
 import * as Bluebird from 'bluebird';
-import { spinner, Command, unwrap } from 'denali-cli';
+import { spinner, Command, unwrap } from '@denali-js/cli';
 import { exec, ExecOptions } from 'child_process';
 import { sync as readPkg } from 'read-pkg';
 
@@ -51,7 +51,7 @@ export default class PublishCommand extends Command {
   protected async build() {
     await spinner.start('Building');
     try {
-      await run('npm run build', {});
+      await run('npm run build', { env: { NODE_ENV: 'production' }});
     } catch (error) {
       await spinner.fail('Build failed, halting publish');
       throw error;

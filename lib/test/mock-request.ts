@@ -1,10 +1,9 @@
 import { IncomingMessage as IncomingHttpMessage, IncomingHttpHeaders } from 'http';
-import { IncomingMessage as IncomingHttpsMessage } from 'https';
 import { PassThrough, Readable } from 'stream';
 import * as url from 'url';
 import { Socket } from 'net';
 import { Dict } from '../utils/types';
-import { mapKeys, toPairs, flatten } from 'lodash';
+import { flatMapDeep, mapKeys, toPairs, flatten } from 'lodash';
 
 
 export interface MockMessageOptions {
@@ -18,12 +17,13 @@ export interface MockMessageOptions {
 }
 
 /**
- * A mock request used to simluate an HTTP request to the application during tests. You shouldn't
- * need to instantiate these directly - instead, use an AppAcceptance test.
+ * A mock request used to simluate an HTTP request to the application during
+ * tests. You shouldn't need to instantiate these directly - instead, use an
+ * AppAcceptance test.
  *
  * @package test
  */
-export default class MockRequest extends PassThrough implements IncomingHttpMessage, IncomingHttpsMessage {
+export default class MockRequest extends PassThrough implements IncomingHttpMessage {
 
   httpVersion = '1.1';
   get httpVersionMajor() {
@@ -40,7 +40,12 @@ export default class MockRequest extends PassThrough implements IncomingHttpMess
 
   headers: IncomingHttpHeaders = {};
   get rawHeaders(): string[] {
-    return flatten(toPairs(this.headers));
+    return flatMapDeep<IncomingHttpHeaders, string>(this.headers, (value, name) => {
+      if (Array.isArray(value)) {
+        return value.map((v) => [ name, v ]);
+      }
+      return [ name, value ];
+    });
   }
 
   method = 'GET';

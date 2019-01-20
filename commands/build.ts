@@ -1,4 +1,4 @@
-import { ui, spinner, Command, Project, unwrap } from 'denali-cli';
+import { ui, spinner, Command, Project, unwrap } from '@denali-js/cli';
 
 /**
  * Compile your app
@@ -30,12 +30,11 @@ export default class BuildCommand extends Command {
       default: false,
       type: <any>'boolean'
     },
-    skipLint: {
-      description: 'Skip linting the app source files',
+    docs: {
+      description: 'Build the documentation as well?',
       default: false,
       type: <any>'boolean'
     },
-    // TODO this should default to true if building for production
     audit: {
       description: 'Auditing your package.json for vulnerabilites',
       default: false,
@@ -53,18 +52,15 @@ export default class BuildCommand extends Command {
   async run(argv: any) {
     let project = new Project({
       environment: argv.environment,
-      printSlowTrees: argv.printSlowTrees,
-      lint: !argv.skipLint,
-      audit: argv.audit
+      docs: argv.docs,
+      printSlowTrees: argv.printSlowTrees
     });
 
     if (argv.watch) {
-      project.watch({
-        outputDir: <string>argv.output
-      });
+      project.watch();
     } else {
       try {
-        await project.build(argv.output);
+        await project.build();
       } catch (error) {
         await spinner.fail('Build failed');
         ui.error(error.stack);
